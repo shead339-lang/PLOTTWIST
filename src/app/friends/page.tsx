@@ -11,11 +11,19 @@ const MAX_FRIENDS = 6;
 const GROUP_ROLES = [
   { id: "hero", label: "The Hero", emoji: "🦸", desc: "Chosen by destiny. Zero preparation." },
   { id: "villain", label: "The Villain", emoji: "😈", desc: "Had a point. Lost it around army #3." },
-  { id: "wizard", label: "The Wizard", emoji: "🧙", desc: "Ancient. Powerful. Deliberately vague." },
-  { id: "sidekick", label: "The Sidekick", emoji: "🤝", desc: "Does 60% of the actual work." },
-  { id: "comic_relief", label: "The Comic Relief", emoji: "🃏", desc: "Everyone underestimated them. Mistake." },
+  { id: "comic_relief", label: "Comic Relief", emoji: "🤡", desc: "Arrived late with snacks. Saved the universe." },
+  { id: "dragon_rider", label: "Dragon Rider", emoji: "🐉", desc: "Befriended a mythical beast. Doesn't do paperwork." },
+  { id: "first_to_die", label: "First to Die", emoji: "💀", desc: "Gave a heartfelt speech in Chapter 1. Bad sign." },
   { id: "traitor", label: "The Traitor", emoji: "🗡️", desc: "94% betrayal probability. They're nice though." },
+  { id: "sidekick", label: "The Sidekick", emoji: "🤝", desc: "Does 80% of the actual heavy lifting." },
 ];
+
+export interface BattleStats {
+  betrayer: { name: string; pct: number };
+  survivor: { name: string; pct: number };
+  runner: { name: string; pct: number };
+  accidentalHero: { name: string; pct: number };
+}
 
 function assignRoles(names: string[]): { name: string; role: (typeof GROUP_ROLES)[0] }[] {
   const shuffledRoles = [...GROUP_ROLES].sort(() => Math.random() - 0.5);
@@ -34,6 +42,7 @@ function generateGroupStory(
   tagline: string;
   story: string;
   traitorChance: string;
+  battleStats: BattleStats;
 } {
   const universeData = UNIVERSES.find((u) => u.id === universe);
   const hero = assignments.find((a) => a.role.id === "hero")?.name ?? names[0];
@@ -41,13 +50,36 @@ function generateGroupStory(
   const traitor = assignments.find((a) => a.role.id === "traitor")?.name;
   const sidekick = assignments.find((a) => a.role.id === "sidekick")?.name;
   const comic = assignments.find((a) => a.role.id === "comic_relief")?.name;
+  const dragonRider = assignments.find((a) => a.role.id === "dragon_rider")?.name;
+  const firstToDie = assignments.find((a) => a.role.id === "first_to_die")?.name;
   const traitorChance = Math.floor(80 + Math.random() * 19) + "%";
 
-  const title = `THE ${names.length} OF ${(universeData?.vocabulary.setting ?? "LEGEND").toUpperCase()}`;
-  const tagline = `${names.length} legends. ${names.length - 1} of them are ready. One of them is ${comic ?? names[names.length - 1]}.`;
-  const story = `When the ${universeData?.vocabulary.villain ?? "Dark Lord"} threatened the ${universeData?.vocabulary.kingdom ?? "kingdom"}, the prophecy called for exactly ${names.length} champions. ${hero} accepted the call without reading the terms and conditions. ${sidekick ? `${sidekick} had actually read them and chose to come anyway.` : ""} ${villain ? `Meanwhile, ${villain} had been preparing their own plans, which were significantly better organized.` : ""} ${traitor ? `${traitor} was enthusiastically supportive throughout — suspiciously so.` : ""} ${comic ? `${comic} arrived late but brought snacks, which turned out to be critical to the mission.` : ""} Together, they faced every challenge, disagreed about everything, and somehow — despite all reasonable predictions to the contrary — saved the day. The ${universeData?.vocabulary.villain ?? "Dark Lord"} was defeated. The friendship survived. ${traitor ? `${traitor}'s 94% betrayal probability remained unused — this time.` : ""}`;
+  const shuffledNames = [...names].sort(() => Math.random() - 0.5);
 
-  return { title, tagline, story, traitorChance };
+  const battleStats: BattleStats = {
+    betrayer: {
+      name: traitor ?? shuffledNames[0],
+      pct: Math.floor(85 + Math.random() * 14),
+    },
+    survivor: {
+      name: hero ?? (shuffledNames[1] || names[0]),
+      pct: Math.floor(88 + Math.random() * 11),
+    },
+    runner: {
+      name: comic ?? (shuffledNames[2] || names[0]),
+      pct: Math.floor(92 + Math.random() * 7),
+    },
+    accidentalHero: {
+      name: sidekick ?? dragonRider ?? (shuffledNames[3] || names[0]),
+      pct: Math.floor(90 + Math.random() * 9),
+    },
+  };
+
+  const title = `THE ${names.length} CHAMPIONS OF ${(universeData?.vocabulary.setting ?? "LEGEND").toUpperCase()}`;
+  const tagline = `${names.length} friends. ${names.length - 1} of them are ready. One of them is ${comic ?? names[names.length - 1]}.`;
+  const story = `When the ${universeData?.vocabulary.villain ?? "Dark Lord"} threatened the realm, the prophecy called for exactly ${names.length} champions. ${hero} accepted the call without reading the terms. ${sidekick ? `${sidekick} actually read the terms and sighed deeply.` : ""} ${villain ? `Meanwhile, ${villain} had been preparing a 47-step evil plan.` : ""} ${traitor ? `${traitor} was enthusiastically supportive throughout — suspiciously so.` : ""} ${firstToDie ? `${firstToDie} gave a very touching speech early on.` : ""} ${dragonRider ? `${dragonRider} showed up with a flying mythical beast that refused to parallel park.` : ""} ${comic ? `${comic} arrived late but brought pizza, which somehow saved the universe.` : ""} Together, they argued about everything, survived every trap, and saved the day on pure chaos.`;
+
+  return { title, tagline, story, traitorChance, battleStats };
 }
 
 export default function FriendsPage() {
@@ -268,6 +300,62 @@ export default function FriendsPage() {
                       </div>
                     </motion.div>
                   ))}
+                </div>
+              </div>
+
+              {/* ⚔️ THE FINAL BATTLE: WHO SURVIVES? */}
+              <div className="card-glass rounded-2xl border border-yellow-400/20 p-6 mb-6">
+                <h3 className="font-title font-bold text-sm uppercase tracking-widest text-yellow-400 mb-4 flex items-center gap-2">
+                  ⚔️ THE FINAL BATTLE: WHO SURVIVES?
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="bg-black/30 p-3 rounded-xl border border-white/5 flex justify-between items-center">
+                    <div>
+                      <span className="text-[#6b7280]">Who betrays everyone?</span>
+                      <div className="text-red-400 font-title font-bold text-sm">
+                        {result.groupStory.battleStats.betrayer.name}
+                      </div>
+                    </div>
+                    <span className="text-red-400 font-bold text-base">
+                      {result.groupStory.battleStats.betrayer.pct}%
+                    </span>
+                  </div>
+
+                  <div className="bg-black/30 p-3 rounded-xl border border-white/5 flex justify-between items-center">
+                    <div>
+                      <span className="text-[#6b7280]">Who definitely survives?</span>
+                      <div className="text-green-400 font-title font-bold text-sm">
+                        {result.groupStory.battleStats.survivor.name}
+                      </div>
+                    </div>
+                    <span className="text-green-400 font-bold text-base">
+                      {result.groupStory.battleStats.survivor.pct}%
+                    </span>
+                  </div>
+
+                  <div className="bg-black/30 p-3 rounded-xl border border-white/5 flex justify-between items-center">
+                    <div>
+                      <span className="text-[#6b7280]">Who runs away first?</span>
+                      <div className="text-amber-400 font-title font-bold text-sm">
+                        {result.groupStory.battleStats.runner.name}
+                      </div>
+                    </div>
+                    <span className="text-amber-400 font-bold text-base">
+                      {result.groupStory.battleStats.runner.pct}%
+                    </span>
+                  </div>
+
+                  <div className="bg-black/30 p-3 rounded-xl border border-white/5 flex justify-between items-center">
+                    <div>
+                      <span className="text-[#6b7280]">Who accidentally saves everyone?</span>
+                      <div className="text-yellow-400 font-title font-bold text-sm">
+                        {result.groupStory.battleStats.accidentalHero.name}
+                      </div>
+                    </div>
+                    <span className="text-yellow-400 font-bold text-base">
+                      {result.groupStory.battleStats.accidentalHero.pct}%
+                    </span>
+                  </div>
                 </div>
               </div>
 

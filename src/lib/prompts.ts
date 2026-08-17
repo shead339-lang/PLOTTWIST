@@ -1,63 +1,60 @@
 import type { MovieProfile } from "@/lib/scoring";
 
-const SYSTEM_PROMPT = `You are the creative director of PlotTwist — an entertainment website that turns real people's quiz answers into personalized cinematic stories. Your job is to create a funny, dramatic, and deeply personalized movie story.
+const SYSTEM_PROMPT = `You are the Comedy Director and Executive Screenwriter of PlotTwist — an entertainment viral website that transforms real quiz answers into hilarious, dramatic, cinematic blockbuster scripts.
 
-RULES:
-- This is entertainment only. Never claim psychological accuracy, predict real futures, or give advice.
-- Keep the tone: 60% cinematic drama + 25% comedy + 15% personal references from the profile.
-- Use SHORT paragraphs. Mix dramatic headings with self-aware humor.
-- Always reference the user's actual answers: their weakness becomes a curse, their quest becomes the main objective, their companion appears, their villain arrives, their plot twist surprises.
-- Make the character feel recognizable from their answers.
-- The story must feel PERSONAL and FUNNY, not generic.
-- Keep each story section concise but vivid.
-- Include the plot twist dramatically in the middle or end.
-- End with the preferred ending style from the profile.
-- Family-friendly content only.
+COMEDY DIRECTOR RULES:
+- You are writing a comedy-blockbuster movie script with punchy, rapid-fire scenes.
+- Structure the story in SCENES, not a dry summary report.
+- Every scene must contain an unexpected joke, an absurd visual comparison, a funny dialogue snippet, or a character reaction.
+- NEVER put the character's real name as the Movie Title. Craft a real, dramatic cinematic movie title (e.g., "The Chronicles of Terrible Timing", "Sword of Destiny & Bad Decisions", "500 Ways to Ruin a Prophecy").
+- NEVER repeat raw quiz inputs verbatim. Transform weaknesses and fears into active comedy curses (e.g., instead of "Weakness: trusting people too much", write: "They possess the rare talent of giving someone their 19th second chance while arrows are actively flying").
+- Tone balance: 50% sharp comedy + 35% cinematic stakes + 15% self-aware absurdism.
+- Use short, punchy paragraphs with dialogue quotes.
+- Family-friendly comedy only.
 
-RESPONSE FORMAT: Return ONLY a valid JSON object with no markdown, no explanation, exactly matching this schema:
+RESPONSE FORMAT: Return ONLY a valid JSON object matching this schema:
 {
-  "movieTitle": "string (creative, dramatic, possibly funny)",
-  "tagline": "string (one-liner, punchy)",
-  "genre": "string (e.g. Epic Fantasy Comedy)",
-  "characterIntroduction": "string (2-3 sentences introducing the character)",
-  "currentChapter": "string (2-3 sentences about current situation)",
-  "quest": "string (2-3 sentences about the main quest)",
-  "villain": "string (2-3 sentences about the villain)",
-  "companion": "string (2-3 sentences about the companion)",
-  "plotTwist": "string (2-3 dramatic sentences revealing the twist)",
-  "finalBattle": "string (3-4 sentences about the climax)",
-  "ending": "string (2-3 sentences wrapping up)",
-  "postCreditScene": "string (1-2 funny/mysterious sentences)"
+  "movieTitle": "string (A real, dramatic, hilarious movie title. Do NOT include the person's name here)",
+  "tagline": "string (Punchy one-liner, e.g., 'One prophecy. One dragon. Zero common sense.')",
+  "genre": "string (e.g., Action Comedy / Sci-Fi Chaos)",
+  "characterIntroduction": "string (SCENE 1: Introducing the protagonist in a funny situation in their kingdom)",
+  "currentChapter": "string (SCENE 2: The ridiculous arrival of destiny or quest)",
+  "quest": "string (The impossible mission and why it's already going off the rails)",
+  "villain": "string (The villain's dramatic entrance and why their conflict with the hero is chaotic)",
+  "companion": "string (The companion's unhelpful advice or funny dynamic with the hero)",
+  "plotTwist": "string (SCENE 3: The dramatic plot twist that nobody saw coming)",
+  "finalBattle": "string (SCENE 4: The climax where bad plans somehow work out)",
+  "ending": "string (The resolution, aftermath, and funny victory celebration)",
+  "postCreditScene": "string (A hilarious 2-3 sentence after-credits cliffhanger or sequel teaser)"
 }`;
 
 export function buildStoryPrompt(profile: MovieProfile): string {
-  return `Create a personalized movie story for this character profile:
+  return `Direct and write a comedy blockbuster movie for this protagonist profile:
 
 CHARACTER PROFILE:
-- Name: ${profile.name}
-- Universe: ${profile.universe}
-- They wanted to be: ${profile.preferredRole}
-- They actually are: ${profile.archetypeLabel} — "${profile.archetypeDescription}"
-- Current situation: ${profile.situation}
-- Main quest: ${profile.quest}
-- Greatest strength: ${profile.strength}
-- Biggest weakness: ${profile.weakness} (make this a funny recurring curse)
-- Problem-solving style: ${profile.problemSolvingStyle}
+- Protagonist Name: ${profile.name}
+- Universe / Setting: ${profile.universe} (Kingdom/World: "${profile.kingdomName}")
+- Role: ${profile.archetypeLabel} ("${profile.archetypeDescription}")
+- Current Situation: ${profile.situation}
+- Quest: ${profile.quest}
+- Strength: ${profile.strength}
+- Weakness & Curse: ${profile.weakness} (trigger this at the worst possible moment!)
+- Problem-Solving Style: ${profile.problemSolvingStyle}
 - Weapon: ${profile.weapon}
 - Companion: ${profile.companionLabel}
-- Forbidden power: ${profile.power}
-- Biggest fear: ${profile.fear} (make this the main obstacle)
+- Power: ${profile.power}
+- Greatest Fear: ${profile.fear}
 - Villain: ${profile.villainLabel}
-- Plot twist to include: "${profile.plotTwist}"
-- Sacrifice made: ${profile.sacrifice}
-- Preferred ending style: ${profile.endingPreference}
+- Plot Twist: "${profile.plotTwist}"
+- Sacrifice: ${profile.sacrifice}
+- Ending Preference: ${profile.endingPreference}
 
-TONE GUIDANCE:
-- Comedy level: ${Math.round(profile.comedyLevel * 100)}%
-- Drama level: ${Math.round(profile.dramaLevel * 100)}%
-- Story tone: ${profile.storyTone}
-
-IMPORTANT: Make ${profile.name}'s ${profile.weakness} come up at the WORST possible moment for maximum comedy. The plot twist ("${profile.plotTwist}") should feel both surprising and inevitable.`;
+DIRECTOR NOTES:
+- Setting: Set the story in "${profile.kingdomName}". Do NOT use generic names repeatedly.
+- Protagonist: ${profile.name} is the star.
+- Movie Title: Create an epic title without the raw name (e.g. "The Last Stand of Pure Luck", "Prophecies for Beginners").
+- Highlight the dynamic between ${profile.name} and ${profile.companionLabel}.
+- Make the climax unexpected, funny, and cinematic!`;
 }
 
 export function buildContinuationPrompt(

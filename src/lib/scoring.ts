@@ -20,10 +20,56 @@ export interface AttributeScores {
   leadership: number;
 }
 
+export interface UnreliableStat {
+  label: string;
+  percentage: number;
+  subStat1: string;
+  subStat2: string;
+}
+
+export interface LifeMechanic {
+  status: string;
+  difficulty: string;
+  mission: string;
+  progressPercent: number;
+  boss: string;
+  specialAbility: string;
+  abilityEffectiveness: string;
+}
+
+export interface InventoryItem {
+  name: string;
+  power: number;
+  emoji: string;
+}
+
+export interface FutureEvent {
+  timeframe: string;
+  prediction: string;
+}
+
+export interface AchievementItem {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+}
+
+export interface BoxOfficeData {
+  audienceRating: string;
+  chaosRating: string;
+  survivalProbability: string;
+  criticalReview: string;
+  openingWeekend: string;
+  productionBudget: string;
+  profit: string;
+}
+
 export interface MovieProfile {
   // User basics
   name: string;
   universe: string;
+  kingdomName: string;
   preferredRole: string;
 
   // Derived from scoring
@@ -53,6 +99,19 @@ export interface MovieProfile {
 
   // Normalized scores (0-100)
   scores: AttributeScores;
+
+  // Rich Viral / Interactive Features
+  unreliableStats: UnreliableStat[];
+  lifeMechanics: LifeMechanic;
+  inventory: InventoryItem[];
+  secretItem: { name: string; description: string; emoji: string };
+  scientificFuture: FutureEvent[];
+  roast: string;
+  harderRoast: string;
+  achievements: AchievementItem[];
+  randomEvents: string[];
+  boxOffice: BoxOfficeData;
+  awards: { title: string; subtitle: string; icon: string }[];
 
   // Tone metadata
   comedyLevel: number; // 0-1
@@ -238,31 +297,31 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
   const companion = selectCompanion(answers.companion);
   const tone = determineTone(scores);
 
-  // Map option IDs to labels for readability
+  // Map option IDs to human-readable labels for readability
   const LABELS: Record<string, Record<string, string>> = {
     situation: {
-      just_starting: "just beginning their journey",
-      lost: "wandering in uncertainty",
-      fighting: "fighting through every obstacle",
-      rebuilding: "rebuilding from the ground up",
-      leveling_up: "leveling up rapidly",
-      on_top: "at the peak of their power",
-      everything_at_once: "dealing with everything at once",
-      stuck: "stuck in an unexpected rut",
-      secret_mission: "on a classified mission nobody knows about",
-      pretending_fine: "definitely fine. Completely fine.",
+      just_starting: "Just Beginning the Journey",
+      lost: "Wandering in Uncertainty",
+      fighting: "Fighting Through Every Obstacle",
+      rebuilding: "Rebuilding from the Ground Up",
+      leveling_up: "Leveling Up Rapidly",
+      on_top: "At the Peak of Power",
+      everything_at_once: "Dealing with Everything at Once",
+      stuck: "Stuck in an Unexpected Rut",
+      secret_mission: "On a Classified Mission",
+      pretending_fine: "Definitely Fine. Completely Fine.",
     },
     quest: {
-      wealth: "Building an empire of wealth",
-      love: "Finding a great love story",
-      career: "Building a legendary career",
-      improve: "Becoming the best version of themselves",
-      prove: "Proving everyone wrong",
-      explore: "Exploring every corner of the world",
-      better_life: "Creating a better life",
-      create: "Creating something that lasts",
-      peace: "Finding inner peace",
-      no_idea: "Figuring out what the quest even is",
+      wealth: "Building an Empire of Wealth",
+      love: "Finding a Legendary Love Story",
+      career: "Building an Unstoppable Career",
+      improve: "Becoming the Best Version of Themselves",
+      prove: "Proving Everyone Wrong",
+      explore: "Exploring Every Corner of the World",
+      better_life: "Creating a Better Life",
+      create: "Creating Something That Lasts",
+      peace: "Finding Inner Peace",
+      no_idea: "Figuring Out What the Quest Even Is",
     },
     strength: {
       intelligence: "Intelligence",
@@ -274,7 +333,7 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
       loyalty: "Loyalty",
       confidence: "Confidence",
       adaptability: "Adaptability",
-      luck: "Luck",
+      luck: "Infinite Luck",
     },
     weakness: {
       procrastination: "Legendary Procrastination",
@@ -301,14 +360,14 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
       pause: "Time Pausing",
     },
     weapon: {
-      sword: "the Legendary Sword",
-      staff: "the Magic Staff",
-      bow: "the Enchanted Bow",
-      hammer: "the Giant Hammer",
-      invisible_sword: "the Invisible Sword",
-      spoon: "the Magical Spoon (don't ask)",
-      forbidden_book: "the Book of Forbidden Knowledge",
-      whatever_nearby: "whatever was nearby (a chair, probably)",
+      sword: "Legendary Sword",
+      staff: "Magic Staff",
+      bow: "Enchanted Bow",
+      hammer: "Giant Hammer",
+      invisible_sword: "Invisible Sword",
+      spoon: "Magical Spoon",
+      forbidden_book: "Book of Forbidden Knowledge",
+      whatever_nearby: "Whatever Was Nearby (A Chair)",
     },
     sacrifice: {
       power: "their power",
@@ -319,6 +378,48 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
       relationship: "their greatest relationship",
       nothing: "absolutely nothing — they found another way",
     },
+    fear: {
+      failure: "Failure",
+      losing_someone: "Losing Someone Close",
+      forgotten: "Being Forgotten",
+      alone: "Being Alone",
+      no_control: "Losing Control",
+      embarrassment: "Public Embarrassment",
+      unknown: "The Unknown",
+      become_villain: "Becoming the Villain",
+      money: "Running Out of Money",
+      monday: "Monday Morning",
+    },
+    trust: {
+      best_friend: "Best Friend",
+      family: "Family",
+      team: "Their Team",
+      nobody: "Nobody (Self-Reliant)",
+      companion: "Their Loyal Companion",
+      myself: "Themselves",
+      mysterious_stranger: "The Mysterious Stranger",
+    },
+    problem_solving: {
+      fight: "Fight Immediately",
+      plan: "Make a 47-Step Plan",
+      run: "Tactical Retreat (Running Away)",
+      talk: "Talk Their Way Out",
+      ask_friend: "Call a Friend in Panic",
+      pretend: "Pretend Nothing Happened",
+      chaos: "Create Maximum Chaos",
+      wait: "Wait for the Right Moment",
+    },
+    ending: {
+      heroic: "Heroic Victory",
+      happy: "Happy Ending",
+      bittersweet: "Bittersweet Resolution",
+      tragic: "Tragic Downfall",
+      become_villain: "Become the Villain",
+      rule: "Rule the Kingdom",
+      disappear: "Disappear Mysteriously",
+      secret_ending: "Secret Post-Credit Ending",
+      sequel: "Leave It Open for Part 2",
+    },
   };
 
   const get = (field: string, id: string) => {
@@ -328,9 +429,211 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
     return labels.join(", ");
   };
 
+  // Random kingdom/realm generator
+  const KINGDOMS_BY_UNIVERSE: Record<string, string[]> = {
+    fantasy: [
+      "The Sovereign Realm of Aethelgard",
+      "Valenreach",
+      "The Gilded Duchy of Oakhaven",
+      "Sunken Isles of Moros",
+      "Duskfall Archipelago",
+      "Solas Peak",
+      "The High Kingdom of Kael-Tiras",
+    ],
+    scifi: [
+      "Neo-Veridia Prime",
+      "Sector 42-B Orbital",
+      "The Chronos Colony",
+      "Astraea Star-Spire",
+      "Vanguard Station 9",
+      "Helix Nebula Outpost",
+    ],
+    magical_academy: [
+      "The Arcane Spires of Ravenhurst",
+      "Oakhaven College of Sorcery",
+      "St. Celestia Academy",
+      "The Grand Archives of Sylveria",
+      "Astral Spire Institute",
+    ],
+    pirate: [
+      "The Crimson Tides",
+      "Port Blackwater",
+      "Isle of Whispering Skulls",
+      "The Gilded Cove",
+      "Kraken's Trench",
+    ],
+    superhero: [
+      "Apex Metropolis",
+      "Iron City Prime",
+      "Neo-Centropolis",
+      "Titan Heights",
+      "Vigilance Bay",
+    ],
+    horror_comedy: [
+      "Spooksville Hollow",
+      "Gloomhaven Woods",
+      "Castle Macabre",
+      "The Whispering Bog of Oakhaven",
+      "Phantom Pines",
+    ],
+  };
+
+  const kingdomPool = KINGDOMS_BY_UNIVERSE[answers.universe] ?? KINGDOMS_BY_UNIVERSE.fantasy;
+  const kingdomName = kingdomPool[Math.floor(Math.random() * kingdomPool.length)];
+
+  // Clean villain label to prevent "The The ..."
+  const cleanVillainLabel = villain.label.replace(/^the\s+the\s+/i, "The ");
+
+  // Generate 🧪 Unreliable Stats
+  const unreliableStats: UnreliableStat[] = [
+    {
+      label: "Bravery",
+      percentage: clamp(scores.bravery || 14),
+      subStat1: `Will fight a dragon: ${clamp(scores.bravery || 14)}%`,
+      subStat2: `Will argue with customer support: ${Math.min(99, 90 + Math.floor(Math.random() * 9))}%`,
+    },
+    {
+      label: "Intelligence",
+      percentage: clamp(scores.intelligence || 22),
+      subStat1: `Big brain moments: ${Math.max(1, Math.floor((scores.intelligence / 100) * 8))}`,
+      subStat2: `Questionable decisions: ${Math.floor(700 + Math.random() * 250)}`,
+    },
+    {
+      label: "Chaos",
+      percentage: clamp(scores.chaos || 79),
+      subStat1: "Accidentally destroyed: Classified",
+      subStat2: "Regrets acknowledged: 0",
+    },
+    {
+      label: "Luck & Survival",
+      percentage: clamp(Math.max(scores.optimism, scores.humor, 85)),
+      subStat1: "Survival rate despite terrible plans: 100%",
+      subStat2: "Villains who missed by 2 inches: 47",
+    },
+  ];
+
+  // Generate 🌪️ Current Life Status as Movie Mechanics
+  const lifeMechanics: LifeMechanic = {
+    status: get("situation", answers.situation).toUpperCase(),
+    difficulty: "☠️☠️☠️☠️☠️",
+    mission: `Somehow conquer "${get("quest", answers.quest)}" without losing sanity`,
+    progressPercent: Math.floor(25 + Math.random() * 25),
+    boss: `THE DEADLINE & ${get("weakness", answers.weakness).toUpperCase()}`,
+    specialAbility: '"I\'ll start tomorrow."',
+    abilityEffectiveness: "2%",
+  };
+
+  // Generate 🎒 Character Inventory
+  const inventory: InventoryItem[] = [
+    { name: get("weapon", answers.weapon), power: 88, emoji: "⚔️" },
+    { name: companion.label, power: 94, emoji: companion.emoji || "🐉" },
+    { name: "Almost-Dead Phone (3%)", power: 4, emoji: "📱" },
+    { name: "Emergency Coffee", power: 99, emoji: "☕" },
+    { name: "Common Sense", power: 17, emoji: "🧠" },
+    { name: "Wallet Balance", power: 6, emoji: "💰" },
+    { name: "Blind Confidence", power: 100, emoji: "🧿" },
+  ];
+
+  const secretItem = {
+    name: "The Chair of Destiny",
+    description: "Nobody knows why you have it. Somehow it keeps saving you in every boss fight.",
+    emoji: "🪑",
+  };
+
+  // Generate 🔮 Scientific Future
+  const scientificFuture: FutureEvent[] = [
+    {
+      timeframe: "Tomorrow",
+      prediction: "You will make one brilliant decision, immediately followed by three catastrophically confusing ones.",
+    },
+    {
+      timeframe: "In 7 Days",
+      prediction: `Your companion (${companion.label}) will become noticeably smarter than you and take over planning.`,
+    },
+    {
+      timeframe: "In 3 Months",
+      prediction: `You will accidentally become the supreme ruler of ${kingdomName}. You will still not read the emails.`,
+    },
+    {
+      timeframe: "In 2 Years",
+      prediction: `You will have the exact same unfinished quest open in your mind at 2:00 AM.`,
+    },
+  ];
+
+  // Generate 🔥 Roasts
+  const roast = `You have ${get("strength", answers.strength)} and ${get("power", answers.power)}, but also ${get("weakness", answers.weakness)}. So basically, you're the kind of hero who survives not because of your master plan, but because the villain keeps missing. Your greatest superpower isn't your weapon — it's other people's poor decision-making.`;
+  const harderRoast = `You possess the legendary ability to give someone their 19th second chance while the entire kingdom is screaming 'STOP TRUSTING THIS PERSON'. If this movie had a sequel budget of ₹12, you would accidentally invest it in the villain's crypto scheme.`;
+
+  // Generate 🏆 Achievements
+  const achievements: AchievementItem[] = [
+    {
+      id: "procrastinator",
+      icon: "🪦",
+      title: "Professional Procrastinator",
+      description: "Survived 12 apocalyptic deadlines without any advance preparation.",
+    },
+    {
+      id: "main_character",
+      icon: "🎭",
+      title: "Main Character Syndrome",
+      description: "Somehow made the entire kingdom's collapse all about your personal journey.",
+    },
+    {
+      id: "companion_whisperer",
+      icon: "🐉",
+      title: "Companion Whisperer",
+      description: `${companion.label} trusts you more than you trust your own alarm clock.`,
+    },
+    {
+      id: "accidental_hero",
+      icon: "💀",
+      title: "Accidental Hero",
+      description: "Defeated the boss while trying to find the bathroom.",
+    },
+    {
+      id: "questionable_decisions",
+      icon: "🤡",
+      title: "Questionable Decision Maker",
+      description: "Made 847 decisions. Exactly 3 were praised by scholars.",
+    },
+  ];
+
+  // Generate 🎲 Random Events
+  const randomEvents = [
+    "🧙 A wizard appears and hands you a glowing ancient scroll. You unroll it. It is a takeout menu.",
+    `🐉 ${companion.label} has started a YouTube gaming channel. It already has more followers than the kingdom's military.`,
+    `👑 You have accidentally been crowned ruler of ${kingdomName} because you signed a receipt without reading.`,
+    "💰 Someone who wronged you three years ago unexpectedly owes you ₹500.",
+    `⚔️ Your ${get("weapon", answers.weapon)} made a weird noise and now only speaks fluent French.`,
+    "🍕 A pizza arrives at your fortress. Nobody ordered it. The villain paid for extra garlic sauce.",
+    "👻 A ghost appears to haunt you, but sees your schedule and decides you have enough going on.",
+    "📱 You accidentally butt-dialed the Dark Lord's castle. They listened to your playlist for 40 minutes.",
+  ];
+
+  // Generate 🍿 Box Office Projection
+  const boxOffice: BoxOfficeData = {
+    audienceRating: "⭐⭐⭐⭐⭐ (4.9/5)",
+    chaosRating: "🔥🔥🔥🔥🔥 (11/10)",
+    survivalProbability: "☠️ 31%",
+    criticalReview: '"Nobody knows what actually happened, but somehow it was the most entertaining spectacle of the decade."',
+    openingWeekend: "₹847 Crore",
+    productionBudget: "₹12",
+    profit: "Absolutely Ridiculous",
+  };
+
+  // Generate 🏅 Awards
+  const awards = [
+    { icon: "🥇", title: "Best Accidental Hero", subtitle: "Defeated destiny on pure improvisation" },
+    { icon: "🏆", title: "Most Unnecessary Plot Twist", subtitle: "Even the narrator was visibly surprised" },
+    { icon: "🏆", title: "Best Use of a Questionable Weapon", subtitle: `Mastered the ${get("weapon", answers.weapon)}` },
+    { icon: "🏆", title: "Most Likely to Survive by Accident", subtitle: "100% survival rate despite all odds" },
+    { icon: "🏆", title: "Worst Decision Made with Supreme Confidence", subtitle: "Executed with 100% charisma" },
+  ];
+
   return {
     name: answers.name,
     universe: answers.universe,
+    kingdomName,
     preferredRole: answers.role,
     actualArchetype: archetype.id,
     archetypeLabel: archetype.label,
@@ -339,19 +642,30 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
     quest: get("quest", answers.quest),
     strength: get("strength", answers.strength),
     weakness: get("weakness", answers.weakness),
-    problemSolvingStyle: answers.problem_solving,
+    problemSolvingStyle: get("problem_solving", answers.problem_solving),
     weapon: get("weapon", answers.weapon),
     companion: answers.companion,
     companionLabel: companion.label,
     power: get("power", answers.power),
-    fear: answers.fear,
-    trust: answers.trust,
+    fear: get("fear", answers.fear),
+    trust: get("trust", answers.trust),
     sacrifice: get("sacrifice", answers.sacrifice),
-    endingPreference: answers.ending,
+    endingPreference: get("ending", answers.ending),
     villain: villain.id,
-    villainLabel: villain.label,
+    villainLabel: cleanVillainLabel,
     plotTwist: plotTwist.label,
     scores,
+    unreliableStats,
+    lifeMechanics,
+    inventory,
+    secretItem,
+    scientificFuture,
+    roast,
+    harderRoast,
+    achievements,
+    randomEvents,
+    boxOffice,
+    awards,
     ...tone,
   };
 }
