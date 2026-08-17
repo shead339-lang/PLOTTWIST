@@ -1,0 +1,388 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Cinzel+Decorative:wght@400;700;900&display=swap");
+@import "tailwindcss";
+
+
+/* ─── Design Tokens ─────────────────────────────────────── */
+:root {
+  --bg-primary: #07060f;
+  --bg-secondary: #0d0b1a;
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --bg-card-hover: rgba(255, 255, 255, 0.08);
+
+  --gold: #f5c842;
+  --gold-light: #fde68a;
+  --gold-dark: #d4a017;
+  --purple: #7c3aed;
+  --purple-light: #a78bfa;
+  --cyan: #06b6d4;
+  --red: #ef4444;
+  --green: #10b981;
+
+  --text-primary: #f0ece8;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(245, 200, 66, 0.3);
+
+  --font-title: "Cinzel", "Georgia", serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-dramatic: "Cinzel Decorative", "Cinzel", serif;
+}
+
+/* ─── Base ──────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Film Grain Overlay ─────────────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* ─── Typography ─────────────────────────────────────────── */
+.font-title {
+  font-family: var(--font-title);
+}
+
+.font-dramatic {
+  font-family: var(--font-dramatic);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-title);
+  letter-spacing: 0.02em;
+}
+
+/* ─── Custom Scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--purple);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+
+/* ─── Gold Gradient Text ─────────────────────────────────── */
+.text-gold-gradient {
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-purple-cyan-gradient {
+  background: linear-gradient(135deg, var(--purple-light) 0%, var(--cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Card Glass ─────────────────────────────────────────── */
+.card-glass {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.card-glass-hover {
+  transition: all 0.25s ease;
+}
+
+.card-glass-hover:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(245, 200, 66, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.15);
+}
+
+/* ─── Glow Effects ───────────────────────────────────────── */
+.glow-gold {
+  box-shadow: 0 0 20px rgba(245, 200, 66, 0.3), 0 0 60px rgba(245, 200, 66, 0.1);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.4), 0 0 60px rgba(124, 58, 237, 0.15);
+}
+
+.glow-text-gold {
+  text-shadow: 0 0 30px rgba(245, 200, 66, 0.5);
+}
+
+/* ─── Buttons ─────────────────────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 50%, var(--gold-light) 100%);
+  color: #0a0600;
+  font-family: var(--font-title);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 32px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.4s ease;
+}
+
+.btn-primary:hover::before {
+  transform: translateX(100%);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(245, 200, 66, 0.4);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--gold);
+  font-family: var(--font-title);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid rgba(245, 200, 66, 0.4);
+  border-radius: 8px;
+  padding: 13px 28px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(245, 200, 66, 0.08);
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
+
+/* ─── Progress Bar ───────────────────────────────────────── */
+.progress-film {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-film-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--purple) 0%, var(--gold) 100%);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 4px;
+}
+
+/* ─── Universe Cards ─────────────────────────────────────── */
+.universe-card {
+  position: relative;
+  cursor: pointer;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.universe-card:hover,
+.universe-card.selected {
+  transform: translateY(-4px) scale(1.02);
+}
+
+.universe-card.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold), 0 12px 48px rgba(245, 200, 66, 0.25);
+}
+
+/* ─── Option Cards ───────────────────────────────────────── */
+.option-card {
+  cursor: pointer;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  background: var(--bg-card);
+  text-align: left;
+  width: 100%;
+}
+
+.option-card:hover {
+  border-color: rgba(245, 200, 66, 0.3);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+
+.option-card.selected {
+  border-color: var(--gold);
+  background: rgba(245, 200, 66, 0.06);
+  box-shadow: 0 0 0 1px var(--gold), 0 4px 20px rgba(245, 200, 66, 0.15);
+}
+
+/* ─── Story Text ─────────────────────────────────────────── */
+.story-section {
+  border-left: 2px solid rgba(245, 200, 66, 0.3);
+  padding-left: 20px;
+  margin-bottom: 24px;
+}
+
+.story-section h3 {
+  color: var(--gold);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-family: var(--font-title);
+}
+
+.story-section p {
+  color: var(--text-primary);
+  line-height: 1.8;
+  font-size: 1rem;
+}
+
+/* ─── Movie Poster Card ──────────────────────────────────── */
+.poster-card {
+  background: linear-gradient(180deg, #0a0014 0%, #1a0030 50%, #0a0014 100%);
+  border: 1px solid rgba(245, 200, 66, 0.4);
+  box-shadow: 0 0 60px rgba(124, 58, 237, 0.3), inset 0 0 60px rgba(0, 0, 0, 0.5);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* ─── Stat Bars ──────────────────────────────────────────── */
+.stat-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Plot Twist Card ────────────────────────────────────── */
+.twist-card {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+  border: 1px solid rgba(124, 58, 237, 0.4);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.twist-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ─── Cinematic Background ───────────────────────────────── */
+.cinematic-bg {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
+              radial-gradient(ellipse at 50% 100%, rgba(245, 200, 66, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Loading States ─────────────────────────────────────── */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(245, 200, 66, 0.1) 50%, transparent 100%);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* ─── Responsive Helpers ─────────────────────────────────── */
+@media (max-width: 640px) {
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    text-align: center;
+    padding: 16px 24px;
+    font-size: 1rem;
+  }
+}
+
+/* ─── Selection Colors ───────────────────────────────────── */
+::selection {
+  background: rgba(245, 200, 66, 0.3);
+  color: var(--text-primary);
+}
+
+/* ─── Focus visible ──────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
