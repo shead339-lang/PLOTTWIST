@@ -18,7 +18,7 @@ export default function TermsPage() {
           <h2 className="font-title text-xl text-[#f0ece8] mt-4">Usage</h2>
           <p>You may use PlotTwist for personal entertainment. You agree not to use the service to generate harmful, defamatory, or harassing content about real individuals. All results are fictional.</p>
           <h2 className="font-title text-xl text-[#f0ece8] mt-4">Content</h2>
-          <p>AI-generated stories are fictional entertainment. PlotTwist is not responsible for how users interpret or share generated content. Content is family-friendly and should not be used to bully or harass others.</p>
+          <p>Generated stories are fictional entertainment. PlotTwist is not responsible for how users interpret or share generated content. Content is family-friendly and should not be used to bully or harass others.</p>
           <h2 className="font-title text-xl text-[#f0ece8] mt-4">No Warranties</h2>
           <p>PlotTwist is provided as-is for entertainment purposes. We make no claims about accuracy, completeness, or psychological validity of any generated content.</p>
           <p className="text-xs text-[#6b7280] mt-6">Last updated: 2026</p>

@@ -3,6 +3,7 @@ export type QuestionType =
   | "universe"
   | "role"
   | "single_choice"
+  | "multi_choice"
   | "text_input";
 
 export interface QuestionOption {
@@ -45,7 +46,7 @@ export const QUESTIONS: Question[] = [
     step: 3,
     type: "role",
     title: "If your life became a movie, who would you want to be?",
-    subtitle: "The AI may have other ideas. Just saying.",
+    subtitle: "Your story, your call.",
   },
   {
     id: "situation",

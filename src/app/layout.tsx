@@ -4,9 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "PlotTwist — Your Life As A Movie",
   description:
-    "Answer a few ridiculous questions and let AI turn your life into an epic cinematic movie. Generate your character, discover your villain, and share your story.",
+    "Answer a few ridiculous questions and turn your life into an epic cinematic movie. Generate your character, discover your villain, and share your story.",
   keywords: [
-    "AI story generator",
+    "cinematic story generator",
     "life as a movie",
     "personality quiz",
     "fantasy character generator",
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PlotTwist — Your Life As A Movie",
     description:
-      "Your real life is boring. Let's turn it into a movie. Answer 15 questions and AI creates your epic cinematic story.",
+      "Your real life is boring. Let's turn it into a movie. Answer 15 questions and create your epic cinematic story.",
     type: "website",
     url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://plottwist.app",
   },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "PlotTwist — Your Life As A Movie",
     description:
-      "Answer a few ridiculous questions and let AI turn your life into a cinematic masterpiece.",
+      "Answer a few ridiculous questions and turn your life into a cinematic masterpiece.",
   },
   robots: {
     index: true,

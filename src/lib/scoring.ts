@@ -178,7 +178,8 @@ function selectPlotTwist(scores: AttributeScores) {
 }
 
 function selectCompanion(answeredCompanion: string) {
-  return COMPANIONS.find((c) => c.id === answeredCompanion) ?? COMPANIONS[0];
+  const firstCompanion = answeredCompanion ? answeredCompanion.split(",")[0].trim() : "";
+  return COMPANIONS.find((c) => c.id === firstCompanion || c.id === answeredCompanion) ?? COMPANIONS[0];
 }
 
 function determineTone(scores: AttributeScores) {
@@ -209,13 +210,17 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
   // Score each answer
   for (const question of QUESTIONS) {
     if (!question.options) continue;
-    const userAnswer = answers[question.id as keyof QuizAnswers];
-    if (!userAnswer) continue;
-    const option = question.options.find(
-      (o: { id: string; scoringEffects: Record<string, number> }) => o.id === userAnswer
-    );
-    if (option?.scoringEffects) {
-      addEffects(rawScores, option.scoringEffects);
+    const rawAnswer = answers[question.id as keyof QuizAnswers];
+    if (!rawAnswer) continue;
+    const answerIds = typeof rawAnswer === "string" ? rawAnswer.split(",") : [rawAnswer];
+    for (const ansId of answerIds) {
+      const trimmedId = String(ansId).trim();
+      const option = question.options.find(
+        (o: { id: string; scoringEffects: Record<string, number> }) => o.id === trimmedId
+      );
+      if (option?.scoringEffects) {
+        addEffects(rawScores, option.scoringEffects);
+      }
     }
   }
 
@@ -316,7 +321,12 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
     },
   };
 
-  const get = (field: string, id: string) => LABELS[field]?.[id] ?? id;
+  const get = (field: string, id: string) => {
+    if (!id) return id;
+    const ids = id.split(",").map((s) => s.trim()).filter(Boolean);
+    const labels = ids.map((item) => LABELS[field]?.[item] ?? item);
+    return labels.join(", ");
+  };
 
   return {
     name: answers.name,

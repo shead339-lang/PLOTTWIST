@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { QUESTIONS, type QuestionOption } from "@/data/questions";
 import { UNIVERSES, getRolesForUniverse } from "@/data/universes";
 import type { QuizAnswers } from "@/lib/validation";
+
+type AnswerValue = string | string[];
 
 // ─── Progress Bar ───────────────────────────────────────────
 function ProgressBar({ current, total }: { current: number; total: number }) {
@@ -133,32 +135,48 @@ function RoleSelector({
   );
 }
 
-// ─── Option Grid ────────────────────────────────────────────
-function OptionGrid({
+// ─── Multi Select Grid ──────────────────────────────────────
+function MultiSelectGrid({
   options,
   selected,
-  onSelect,
+  onToggle,
 }: {
   options: QuestionOption[];
-  selected: string;
-  onSelect: (id: string) => void;
+  selected: string[];
+  onToggle: (id: string) => void;
 }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl mx-auto">
-      {options.map((opt) => (
-        <button
-          key={opt.id}
-          id={`option-${opt.id}`}
-          onClick={() => onSelect(opt.id)}
-          className={`option-card flex items-center gap-3 ${selected === opt.id ? "selected" : ""}`}
-        >
-          <span className="text-2xl flex-shrink-0">{opt.emoji}</span>
-          <span className="text-[#f0ece8] font-medium text-sm text-left">{opt.label}</span>
-          {selected === opt.id && (
-            <span className="ml-auto text-yellow-400 text-sm">✓</span>
-          )}
-        </button>
-      ))}
+    <div className="w-full max-w-xl mx-auto">
+      <p className="text-center text-[#9ca3af] text-xs mb-4 uppercase tracking-widest">
+        Select all that apply
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {options.map((opt) => {
+          const isSelected = selected.includes(opt.id);
+          return (
+            <button
+              key={opt.id}
+              id={`option-${opt.id}`}
+              onClick={() => onToggle(opt.id)}
+              className={`option-card flex items-center gap-3 transition-all duration-200 ${
+                isSelected ? "selected" : ""
+              }`}
+            >
+              <span className="text-2xl flex-shrink-0">{opt.emoji}</span>
+              <span className="text-[#f0ece8] font-medium text-sm text-left flex-1">{opt.label}</span>
+              <span
+                className={`w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center text-xs transition-all duration-200 ${
+                  isSelected
+                    ? "bg-yellow-400 border-yellow-400 text-black"
+                    : "border-white/20"
+                }`}
+              >
+                {isSelected ? "✓" : ""}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -167,9 +185,12 @@ function OptionGrid({
 export default function QuizPage() {
   const router = useRouter();
   const [step, setStep] = useState(0); // 0 = not started
-  const [answers, setAnswers] = useState<Partial<QuizAnswers>>({});
+  const [answers, setAnswers] = useState<Partial<Record<string, AnswerValue>>>({});
   const [direction, setDirection] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Keep a ref so goNext always reads latest answers
+  const answersRef = useRef(answers);
+  answersRef.current = answers;
 
   const currentQuestion = QUESTIONS[step] ?? null;
   const totalSteps = QUESTIONS.length;
@@ -199,34 +220,68 @@ export default function QuizPage() {
   }, [answers, step]);
 
   const handleAnswer = useCallback(
-    (questionId: string, value: string) => {
+    (questionId: string, value: AnswerValue) => {
       setAnswers((prev) => ({ ...prev, [questionId]: value }));
     },
     []
   );
 
-  const getCurrentAnswer = () => {
+  const handleMultiToggle = useCallback(
+    (questionId: string, optionId: string) => {
+      setAnswers((prev) => {
+        const current = (prev[questionId] as string[] | undefined) ?? [];
+        const updated = current.includes(optionId)
+          ? current.filter((id) => id !== optionId)
+          : [...current, optionId];
+        return { ...prev, [questionId]: updated };
+      });
+    },
+    []
+  );
+
+  const getCurrentAnswer = (): string => {
     if (!currentQuestion) return "";
-    return (answers[currentQuestion.id as keyof QuizAnswers] as string) ?? "";
+    const val = answers[currentQuestion.id];
+    return (typeof val === "string" ? val : "") ?? "";
+  };
+
+  const getCurrentMultiAnswer = (): string[] => {
+    if (!currentQuestion) return [];
+    const val = answers[currentQuestion.id];
+    return Array.isArray(val) ? val : [];
   };
 
   const canProceed = () => {
     if (!currentQuestion) return false;
     if (currentQuestion.type === "name") {
-      return (answers.name ?? "").trim().length > 0;
+      return ((answers.name ?? "") as string).trim().length > 0;
     }
     if (currentQuestion.type === "universe") return !!answers.universe;
     if (currentQuestion.type === "role") return !!answers.role;
-    return !!answers[currentQuestion.id as keyof QuizAnswers];
+    if (currentQuestion.type === "multi_choice") {
+      const val = answers[currentQuestion.id];
+      return Array.isArray(val) && val.length > 0;
+    }
+    return !!answers[currentQuestion.id];
   };
 
   const goNext = async () => {
     if (!canProceed()) return;
 
     if (step === totalSteps - 1) {
-      // Submit
+      // Use ref to get latest answers (avoids stale closure issue)
+      const latestAnswers = answersRef.current;
       setIsSubmitting(true);
-      sessionStorage.setItem("plottwist-answers", JSON.stringify(answers));
+      // Flatten multi-choice arrays to comma-joined strings for the API
+      const flatAnswers: Record<string, string> = {};
+      for (const [key, val] of Object.entries(latestAnswers)) {
+        if (Array.isArray(val)) {
+          flatAnswers[key] = val.join(",");
+        } else if (typeof val === "string") {
+          flatAnswers[key] = val;
+        }
+      }
+      sessionStorage.setItem("plottwist-answers", JSON.stringify(flatAnswers));
       router.push("/generate");
       return;
     }
@@ -329,33 +384,34 @@ export default function QuizPage() {
               {/* Input type */}
               {currentQuestion.type === "name" && (
                 <NameInput
-                  value={answers.name ?? ""}
+                  value={typeof answers.name === "string" ? answers.name : ""}
                   onChange={(v) => handleAnswer("name", v)}
                 />
               )}
 
               {currentQuestion.type === "universe" && (
                 <UniverseSelector
-                  selected={answers.universe ?? ""}
+                  selected={typeof answers.universe === "string" ? answers.universe : ""}
                   onSelect={(v) => handleAnswer("universe", v)}
                 />
               )}
 
               {currentQuestion.type === "role" && (
                 <RoleSelector
-                  universeId={answers.universe ?? "fantasy"}
-                  selected={answers.role ?? ""}
+                  universeId={typeof answers.universe === "string" ? answers.universe : "fantasy"}
+                  selected={typeof answers.role === "string" ? answers.role : ""}
                   onSelect={(v) => handleAnswer("role", v)}
                 />
               )}
 
-              {currentQuestion.type === "single_choice" && currentQuestion.options && (
-                <OptionGrid
-                  options={currentQuestion.options}
-                  selected={getCurrentAnswer()}
-                  onSelect={(v) => handleAnswer(currentQuestion.id, v)}
-                />
-              )}
+              {(currentQuestion.type === "single_choice" || currentQuestion.type === "multi_choice") &&
+                currentQuestion.options && (
+                  <MultiSelectGrid
+                    options={currentQuestion.options}
+                    selected={getCurrentMultiAnswer()}
+                    onToggle={(v) => handleMultiToggle(currentQuestion.id, v)}
+                  />
+                )}
             </motion.div>
           </AnimatePresence>
 

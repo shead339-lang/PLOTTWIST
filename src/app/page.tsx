@@ -51,9 +51,9 @@ const HOW_IT_WORKS = [
   },
   {
     step: "02",
-    title: "AI builds your cinematic story",
+    title: "We craft your cinematic story",
     description:
-      "Our scoring engine builds your character profile. Then AI transforms it into a personalized, funny, dramatic movie — starring you.",
+      "Our story engine builds your character profile and transforms it into a personalized, funny, dramatic movie — starring you.",
     icon: "🎬",
   },
   {
@@ -67,24 +67,24 @@ const HOW_IT_WORKS = [
 
 const FAQ_ITEMS = [
   {
-    q: "Is this actually AI?",
-    a: "Yes! Your answers are scored by a deterministic engine that builds a character profile, which is then sent to an AI to write your personalized story. Think of it as AI acting as the movie's director, not the quiz master.",
+    q: "How are the stories created?",
+    a: "Your answers are scored by our cinematic narrative engine to build a custom character profile and generate your personalized story. Think of it as your personal movie director crafting your adventure.",
   },
   {
     q: "Is any of this real or accurate?",
-    a: "This is entertainment. Your movie is fictional and created for fun. We don't predict your future, diagnose your personality, or make any scientific claims. Your weakness becoming a 'cursed burden' is comedy, not psychology.",
+    a: "This is entertainment! Your movie is fictional and created for fun. We don't predict your future, diagnose your personality, or make any scientific claims. Your weakness becoming a 'cursed burden' is comedy, not psychology.",
   },
   {
     q: "Can I make a movie with friends?",
-    a: "Yes! After creating your movie, you can enter your friend group and the AI assigns roles — hero, villain, sidekick, the one who betrays everyone. Friend mode creates a shared group story.",
+    a: "Yes! After creating your movie, you can enter your friend group and PlotTwist assigns roles — hero, villain, sidekick, the one who betrays everyone. Friend mode creates a shared group story.",
   },
   {
     q: "Do I need to create an account?",
     a: "No account needed for your first movie. Just answer the questions and your story is generated instantly. You get a unique shareable link.",
   },
   {
-    q: "What if the AI is busy?",
-    a: "We have a full fallback story template system. Even if AI is unavailable, you still get a funny, personalized story based on your answers. The site never goes blank.",
+    q: "What if there is high traffic?",
+    a: "We have an instant fallback story template system. You always get a funny, personalized story based on your answers. The site never goes blank.",
   },
 ];
 
@@ -182,7 +182,7 @@ export default function HomePage() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-400/30 bg-yellow-400/5 mb-8">
             <Film size={14} className="text-yellow-400" />
             <span className="text-yellow-400 text-xs font-semibold uppercase tracking-widest">
-              AI Entertainment — For Fun Only
+              Cinematic Entertainment — For Fun Only
             </span>
           </div>
 
@@ -196,7 +196,7 @@ export default function HomePage() {
           </h1>
 
           <p className="text-[#9ca3af] text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            Answer a few ridiculous questions and let AI turn your life into an epic,
+            Answer a few ridiculous questions and turn your life into an epic,
             funny, completely fictional cinematic adventure.
           </p>
 
@@ -341,7 +341,7 @@ export default function HomePage() {
               Make A Movie With Friends
             </h2>
             <p className="text-[#9ca3af] text-lg mb-6 leading-relaxed">
-              Enter your friend group, choose a universe, and AI assigns everyone a role.
+              Enter your friend group, choose a universe, and PlotTwist assigns everyone a role.
               Who's the hero? Who's the villain? Who has a{" "}
               <span className="text-yellow-400">94% chance of betrayal?</span>
             </p>

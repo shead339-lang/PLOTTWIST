@@ -1,21 +1,26 @@
 import { z } from "zod";
 
+const answerField = (errMsg: string) =>
+  z
+    .union([z.string().min(1, errMsg), z.array(z.string().min(1)).min(1, errMsg)])
+    .transform((v) => (Array.isArray(v) ? v.join(",") : v));
+
 export const QuizAnswersSchema = z.object({
   name: z.string().min(1, "Name is required").max(30, "Name must be 30 characters or less").trim(),
   universe: z.string().min(1, "Universe is required"),
   role: z.string().min(1, "Role is required"),
-  situation: z.string().min(1, "Situation is required"),
-  quest: z.string().min(1, "Quest is required"),
-  strength: z.string().min(1, "Strength is required"),
-  weakness: z.string().min(1, "Weakness is required"),
-  problem_solving: z.string().min(1, "Problem solving style is required"),
-  weapon: z.string().min(1, "Weapon is required"),
-  companion: z.string().min(1, "Companion is required"),
-  power: z.string().min(1, "Power is required"),
-  fear: z.string().min(1, "Fear is required"),
-  trust: z.string().min(1, "Trust is required"),
-  sacrifice: z.string().min(1, "Sacrifice is required"),
-  ending: z.string().min(1, "Ending is required"),
+  situation: answerField("Situation is required"),
+  quest: answerField("Quest is required"),
+  strength: answerField("Strength is required"),
+  weakness: answerField("Weakness is required"),
+  problem_solving: answerField("Problem solving style is required"),
+  weapon: answerField("Weapon is required"),
+  companion: answerField("Companion is required"),
+  power: answerField("Power is required"),
+  fear: answerField("Fear is required"),
+  trust: answerField("Trust is required"),
+  sacrifice: answerField("Sacrifice is required"),
+  ending: answerField("Ending is required"),
 });
 
 export type QuizAnswers = z.infer<typeof QuizAnswersSchema>;
