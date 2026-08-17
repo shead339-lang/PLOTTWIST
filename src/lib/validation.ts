@@ -1,26 +1,34 @@
 import { z } from "zod";
 
-const answerField = (errMsg: string) =>
+const defaultAnswer = (defaultValue: string) =>
   z
-    .union([z.string().min(1, errMsg), z.array(z.string().min(1)).min(1, errMsg)])
-    .transform((v) => (Array.isArray(v) ? v.join(",") : v));
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((v) => {
+      if (!v) return defaultValue;
+      if (Array.isArray(v)) return v.length > 0 ? v.join(",") : defaultValue;
+      return v.trim() || defaultValue;
+    });
 
 export const QuizAnswersSchema = z.object({
-  name: z.string().min(1, "Name is required").max(30, "Name must be 30 characters or less").trim(),
-  universe: z.string().min(1, "Universe is required"),
-  role: z.string().min(1, "Role is required"),
-  situation: answerField("Situation is required"),
-  quest: answerField("Quest is required"),
-  strength: answerField("Strength is required"),
-  weakness: answerField("Weakness is required"),
-  problem_solving: answerField("Problem solving style is required"),
-  weapon: answerField("Weapon is required"),
-  companion: answerField("Companion is required"),
-  power: answerField("Power is required"),
-  fear: answerField("Fear is required"),
-  trust: answerField("Trust is required"),
-  sacrifice: answerField("Sacrifice is required"),
-  ending: answerField("Ending is required"),
+  name: z
+    .string()
+    .optional()
+    .transform((v) => (v && v.trim().length > 0 ? v.trim().slice(0, 30) : "The Hero")),
+  universe: z.string().optional().transform((v) => (v && v.trim() ? v : "fantasy")),
+  role: z.string().optional().transform((v) => (v && v.trim() ? v : "reluctant_hero")),
+  situation: defaultAnswer("just_starting"),
+  quest: defaultAnswer("wealth"),
+  strength: defaultAnswer("intelligence"),
+  weakness: defaultAnswer("procrastination"),
+  problem_solving: defaultAnswer("plan"),
+  weapon: defaultAnswer("sword"),
+  companion: defaultAnswer("dragon"),
+  power: defaultAnswer("time"),
+  fear: defaultAnswer("failure"),
+  trust: defaultAnswer("best_friend"),
+  sacrifice: defaultAnswer("power"),
+  ending: defaultAnswer("heroic"),
 });
 
 export type QuizAnswers = z.infer<typeof QuizAnswersSchema>;

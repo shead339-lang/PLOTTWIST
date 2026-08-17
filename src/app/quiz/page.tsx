@@ -192,7 +192,7 @@ export default function QuizPage() {
   const answersRef = useRef(answers);
   answersRef.current = answers;
 
-  const currentQuestion = QUESTIONS[step] ?? null;
+  const currentQuestion = step > 0 ? QUESTIONS[step - 1] : null;
   const totalSteps = QUESTIONS.length;
 
   // Load saved progress from sessionStorage
@@ -221,7 +221,11 @@ export default function QuizPage() {
 
   const handleAnswer = useCallback(
     (questionId: string, value: AnswerValue) => {
-      setAnswers((prev) => ({ ...prev, [questionId]: value }));
+      setAnswers((prev) => {
+        const next = { ...prev, [questionId]: value };
+        answersRef.current = next;
+        return next;
+      });
     },
     []
   );
@@ -233,7 +237,9 @@ export default function QuizPage() {
         const updated = current.includes(optionId)
           ? current.filter((id) => id !== optionId)
           : [...current, optionId];
-        return { ...prev, [questionId]: updated };
+        const next = { ...prev, [questionId]: updated };
+        answersRef.current = next;
+        return next;
       });
     },
     []
@@ -254,21 +260,20 @@ export default function QuizPage() {
   const canProceed = () => {
     if (!currentQuestion) return false;
     if (currentQuestion.type === "name") {
-      return ((answers.name ?? "") as string).trim().length > 0;
+      const nameVal = answers.name;
+      return typeof nameVal === "string" && nameVal.trim().length > 0;
     }
     if (currentQuestion.type === "universe") return !!answers.universe;
     if (currentQuestion.type === "role") return !!answers.role;
-    if (currentQuestion.type === "multi_choice") {
-      const val = answers[currentQuestion.id];
-      return Array.isArray(val) && val.length > 0;
-    }
-    return !!answers[currentQuestion.id];
+    const val = answers[currentQuestion.id];
+    if (Array.isArray(val)) return val.length > 0;
+    return !!val;
   };
 
   const goNext = async () => {
     if (!canProceed()) return;
 
-    if (step === totalSteps - 1) {
+    if (step === totalSteps) {
       // Use ref to get latest answers (avoids stale closure issue)
       const latestAnswers = answersRef.current;
       setIsSubmitting(true);
@@ -433,7 +438,7 @@ export default function QuizPage() {
                 canProceed() ? "opacity-100" : "opacity-40 cursor-not-allowed"
               }`}
             >
-              {step === totalSteps - 1 ? (
+              {step === totalSteps ? (
                 isSubmitting ? "Creating..." : "CREATE MY MOVIE 🎬"
               ) : (
                 <>
