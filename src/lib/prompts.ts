@@ -35,24 +35,31 @@ CHARACTER PROFILE:
 - Protagonist Name: ${profile.name}
 - Universe / Setting: ${profile.universe} (Kingdom/World: "${profile.kingdomName}")
 - Role: ${profile.archetypeLabel} ("${profile.archetypeDescription}")
+- Roast Archetype: ${profile.roastPersonality?.title ?? "THE HUMAN PLOT TWIST"} ("${profile.roastPersonality?.tagline ?? ""}")
 - Current Situation: ${profile.situation}
 - Quest: ${profile.quest}
 - Strength: ${profile.strength}
 - Weakness & Curse: ${profile.weakness} (trigger this at the worst possible moment!)
 - Problem-Solving Style: ${profile.problemSolvingStyle}
+- Emergency Strategy: ${profile.emergencyStrategy}
 - Weapon: ${profile.weapon}
 - Companion: ${profile.companionLabel}
-- Power: ${profile.power}
-- Greatest Fear: ${profile.fear}
 - Villain: ${profile.villainLabel}
 - Plot Twist: "${profile.plotTwist}"
 - Sacrifice: ${profile.sacrifice}
 - Ending Preference: ${profile.endingPreference}
 
+COLLECTED ROAST EVIDENCE:
+- Worst Decision: "${profile.worstDecision?.answerChosen}" during "${profile.worstDecision?.questionTitle}"
+- Key Evidence:
+${(profile.roastEvidenceList || []).slice(0, 5).map((e) => `  * ${e}`).join("\n")}
+- Total Roast Damage: ${profile.roastReceipt?.totalDamage ?? 87}/100
+
 DIRECTOR NOTES:
 - Setting: Set the story in "${profile.kingdomName}". Do NOT use generic names repeatedly.
 - Protagonist: ${profile.name} is the star.
-- Movie Title: Create an epic title without the raw name (e.g. "The Last Stand of Pure Luck", "Prophecies for Beginners").
+- Movie Title: Create an epic title without the raw name (e.g. "The Last Stand of Pure Luck", "Prophecies for Beginners", "The Man Who Ignored Every Warning").
+- Weave in the narrator voice actively judging ${profile.name}'s worst decision.
 - Highlight the dynamic between ${profile.name} and ${profile.companionLabel}.
 - Make the climax unexpected, funny, and cinematic!`;
 }

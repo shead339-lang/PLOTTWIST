@@ -3,18 +3,30 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, AlertTriangle, ShieldAlert, Flame, FileText } from "lucide-react";
 import { QUESTIONS } from "@/data/questions";
 import type { QuestionOption } from "@/data/questions";
 import { UNIVERSES, getRolesForUniverse } from "@/data/universes";
 
 type AnswerValue = string | string[];
 
-// ─── Progress Bar ────────────────────────────────────────────
-function ProgressBar({ current, total }: { current: number; total: number }) {
+// ─── Progress Bar & Roast Meter ─────────────────────────────
+function QuizHeader({
+  current,
+  total,
+  roastMeter,
+  evidenceCount,
+  redFlagCount,
+}: {
+  current: number;
+  total: number;
+  roastMeter: number;
+  evidenceCount: number;
+  redFlagCount: number;
+}) {
   const pct = Math.round((current / total) * 100);
   return (
-    <div className="fixed top-0 left-0 right-0 z-50">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-[#07030e]/90 backdrop-blur-md border-b border-white/5">
       <div className="h-1.5 w-full bg-white/5">
         <motion.div
           className="h-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-purple-500"
@@ -23,11 +35,34 @@ function ProgressBar({ current, total }: { current: number; total: number }) {
           transition={{ duration: 0.3, ease: "easeOut" }}
         />
       </div>
-      <div className="flex justify-between items-center px-4 py-2 text-xs text-[#9ca3af] bg-[#07030e]/80 backdrop-blur-sm">
-        <span className="font-title tracking-wider text-yellow-400/80">
-          Question {current} of {total}
-        </span>
-        <span>{pct}% Answered</span>
+      <div className="max-w-4xl mx-auto flex justify-between items-center px-4 py-2 text-xs">
+        <div className="flex items-center gap-3">
+          <span className="font-title tracking-wider text-yellow-400/90 font-bold">
+            Question {current} of {total}
+          </span>
+          <span className="text-[#6b7280] hidden sm:inline">•</span>
+          <span className="text-[#9ca3af] hidden sm:inline flex items-center gap-1">
+            <FileText size={12} className="text-purple-400" />
+            Evidence: <strong className="text-[#f0ece8]">{evidenceCount}</strong> logged
+            {redFlagCount > 0 && (
+              <span className="text-red-400 ml-1">({redFlagCount} red flags 🚩)</span>
+            )}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-[#9ca3af] text-[11px] uppercase font-title tracking-wider">
+            Roast Level
+          </span>
+          <div className="w-16 sm:w-24 bg-white/10 rounded-full h-2 overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-yellow-500 to-red-500 rounded-full"
+              animate={{ width: `${Math.min(100, roastMeter)}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
+          <span className="font-bold text-red-400 text-xs">{roastMeter}%</span>
+        </div>
       </div>
     </div>
   );
@@ -139,7 +174,7 @@ function SingleSelectGrid({
 }: {
   options: QuestionOption[];
   selected: string;
-  onSelect: (id: string) => void;
+  onSelect: (opt: QuestionOption) => void;
 }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl mx-auto">
@@ -147,7 +182,7 @@ function SingleSelectGrid({
         <button
           key={opt.id}
           id={`option-${opt.id}`}
-          onClick={() => onSelect(opt.id)}
+          onClick={() => onSelect(opt)}
           className={`option-card flex items-start gap-3 text-left transition-all duration-200 ${
             selected === opt.id ? "selected" : ""
           }`}
@@ -172,16 +207,75 @@ function SingleSelectGrid({
   );
 }
 
+// ─── Mid-Way Checkpoint Intermission ─────────────────────────
+function HalfwayDiagnosticModal({ onContinue }: { onContinue: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 z-50 bg-[#07030e]/95 backdrop-blur-xl flex items-center justify-center p-4"
+    >
+      <div className="max-w-md w-full card-glass border border-yellow-400/30 rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden">
+        <div className="text-5xl mb-4">⚠️</div>
+        <p className="text-yellow-400 text-xs font-title uppercase tracking-widest mb-1">
+          HALFWAY DIAGNOSTIC
+        </p>
+        <h3 className="font-dramatic text-2xl sm:text-3xl font-black text-[#f0ece8] mb-4 glow-text-gold">
+          WE HAVE SERIOUS CONCERNS.
+        </h3>
+        <p className="text-[#d1c8b8] text-xs leading-relaxed mb-6">
+          The director and AI review committee have analyzed your first 6 decisions:
+        </p>
+
+        <div className="space-y-2.5 text-xs text-left bg-black/40 p-4 rounded-2xl border border-white/5 mb-6">
+          <div className="flex justify-between">
+            <span className="text-[#9ca3af]">Chaos Level:</span>
+            <span className="text-red-400 font-bold">78% (Extreme)</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-[#9ca3af]">Common Sense Detected:</span>
+            <span className="text-gray-400 font-bold">23% (Marginal)</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-[#9ca3af]">Unearned Confidence:</span>
+            <span className="text-green-400 font-bold">94% (Hazardous)</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-[#9ca3af]">Survival Odds:</span>
+            <span className="text-purple-400 font-bold">34% (Pray for rain)</span>
+          </div>
+          <div className="flex justify-between border-t border-white/10 pt-2 text-yellow-400">
+            <span>Why are you like this?:</span>
+            <strong className="font-bold">100%</strong>
+          </div>
+        </div>
+
+        <button
+          onClick={onContinue}
+          className="btn-primary w-full py-3.5 text-xs sm:text-sm font-title font-bold flex items-center justify-center gap-2"
+        >
+          CONTINUE MAKING QUESTIONABLE DECISIONS →
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 // ─── Quiz Page ──────────────────────────────────────────────
 export default function QuizPage() {
   const router = useRouter();
-  const [step, setStep] = useState(0); // 0 = not started
+  const [step, setStep] = useState(0); // 0 = start warning
   const [answers, setAnswers] = useState<Partial<Record<string, AnswerValue>>>({});
   const [direction, setDirection] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [roastMessage, setRoastMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [comboCount, setComboCount] = useState(0);
+  const [roastMeter, setRoastMeter] = useState(30);
+  const [evidenceCount, setEvidenceCount] = useState(0);
+  const [redFlagCount, setRedFlagCount] = useState(0);
+  const [showHalfway, setShowHalfway] = useState(false);
+  const hasShownHalfway = useRef(false);
 
-  // Keep a ref so goNext always reads latest answers
   const answersRef = useRef(answers);
   answersRef.current = answers;
 
@@ -190,13 +284,13 @@ export default function QuizPage() {
 
   // Idle timer to roast user if they take too long
   useEffect(() => {
-    if (step === 0) return;
+    if (step === 0 || showHalfway) return;
     const idleTimer = setTimeout(() => {
-      setRoastMessage("Still thinking? It's okay. The kingdom has been waiting for 14 minutes. 😂");
+      setToastMessage("Still thinking? It's okay. The kingdom has been waiting for 14 minutes. 😂");
     }, 12000);
 
     return () => clearTimeout(idleTimer);
-  }, [step]);
+  }, [step, showHalfway]);
 
   // Load saved progress from sessionStorage
   useEffect(() => {
@@ -222,9 +316,42 @@ export default function QuizPage() {
     }
   }, [answers, step]);
 
-  const handleAnswer = useCallback(
+  const handleOptionSelect = (opt: QuestionOption) => {
+    if (!currentQuestion) return;
+
+    // Track Evidence & Roast Meter
+    setEvidenceCount((c) => c + 1);
+    if (opt.isRedFlag) setRedFlagCount((r) => r + 1);
+
+    if (opt.isBadDecision || opt.isRedFlag) {
+      setComboCount((c) => {
+        const next = c + 1;
+        if (next >= 3) {
+          setToastMessage(`🔥 COMBO x${next}! Stop, you're making this too easy to roast 💀`);
+        } else if (opt.directorReaction) {
+          setToastMessage(`🎬 Director's note: "${opt.directorReaction}"`);
+        }
+        return next;
+      });
+      setRoastMeter((m) => Math.min(99, m + 8));
+    } else {
+      setComboCount(0);
+      if (opt.directorReaction) {
+        setToastMessage(`🎬 Director's note: "${opt.directorReaction}"`);
+      }
+      setRoastMeter((m) => Math.min(99, m + 3));
+    }
+
+    setAnswers((prev) => {
+      const next = { ...prev, [currentQuestion.id]: opt.id };
+      answersRef.current = next;
+      return next;
+    });
+  };
+
+  const handleRawAnswer = useCallback(
     (questionId: string, value: AnswerValue) => {
-      setRoastMessage(null);
+      setToastMessage(null);
       setAnswers((prev) => {
         const next = { ...prev, [questionId]: value };
         answersRef.current = next;
@@ -255,7 +382,14 @@ export default function QuizPage() {
 
   const goNext = async () => {
     if (!canProceed()) return;
-    setRoastMessage(null);
+    setToastMessage(null);
+
+    // Show Halfway Checkpoint at step 6
+    if (step === 6 && !hasShownHalfway.current) {
+      hasShownHalfway.current = true;
+      setShowHalfway(true);
+      return;
+    }
 
     if (step === totalSteps) {
       const latestAnswers = answersRef.current;
@@ -282,7 +416,7 @@ export default function QuizPage() {
       router.push("/");
       return;
     }
-    setRoastMessage("Going back? Interesting. The timeline has been damaged. 🌀");
+    setToastMessage("Going back? Interesting. The timeline has been damaged. 🌀");
     setDirection(-1);
     setStep((s) => s - 1);
   };
@@ -300,7 +434,16 @@ export default function QuizPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16">
+      {/* Halfway Diagnostic Intermission */}
+      {showHalfway && (
+        <HalfwayDiagnosticModal onContinue={() => {
+          setShowHalfway(false);
+          setDirection(1);
+          setStep((s) => s + 1);
+        }} />
+      )}
+
       {/* Back button */}
       <button
         onClick={goBack}
@@ -311,53 +454,62 @@ export default function QuizPage() {
         {step === 0 ? "Home" : "Back"}
       </button>
 
-      {/* Progress */}
+      {/* Header & Roast Meter */}
       {step > 0 && step <= totalSteps && (
-        <ProgressBar current={step} total={totalSteps} />
+        <QuizHeader
+          current={step}
+          total={totalSteps}
+          roastMeter={roastMeter}
+          evidenceCount={evidenceCount}
+          redFlagCount={redFlagCount}
+        />
       )}
 
-      {/* Roasting Toast */}
+      {/* Toast Notification for Director Notes / Roasts */}
       <AnimatePresence>
-        {roastMessage && (
+        {toastMessage && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-14 z-50 bg-amber-950/90 border border-amber-500/40 text-amber-200 text-xs px-4 py-2 rounded-full shadow-lg max-w-sm text-center"
+            className="fixed top-14 z-50 bg-amber-950/95 border border-amber-500/40 text-amber-200 text-xs px-4 py-2 rounded-full shadow-2xl max-w-md text-center"
           >
-            {roastMessage}
+            {toastMessage}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Start screen */}
+      {/* Start screen with Warning */}
       {step === 0 && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center max-w-lg"
+          className="text-center max-w-lg card-glass border border-yellow-400/30 rounded-3xl p-8 shadow-2xl"
         >
-          <div className="text-6xl mb-6">🎬</div>
-          <h1 className="font-title text-3xl sm:text-5xl font-black text-gold-gradient mb-4">
-            YOUR LIFE: THE MOVIE
+          <div className="text-6xl mb-4">⚠️</div>
+          <p className="text-yellow-400 text-xs font-title uppercase tracking-widest mb-1">
+            EVERY CLICK IS EVIDENCE
+          </p>
+          <h1 className="font-dramatic text-3xl sm:text-4xl font-black text-gold-gradient mb-4">
+            ROAST WARNING
           </h1>
-          <p className="text-[#d1c8b8] text-base sm:text-lg mb-8 leading-relaxed">
-            We asked you 12 questions. We regret asking 11 of them.
-            <br />
-            <span className="text-[#9ca3af] text-sm">
-              “Answer honestly. Our completely unqualified AI will turn your life into a movie.”
+          <p className="text-[#d1c8b8] text-sm leading-relaxed mb-6">
+            Every answer you choose will be logged, analyzed, and used against you later in your official Roast Receipt.
+            <br /><br />
+            <span className="text-yellow-400/90 font-bold">
+              Choose wisely. Or don't. We prefer don't. 💀
             </span>
           </p>
           <button
             id="quiz-start"
             onClick={() => { setDirection(1); setStep(1); }}
-            className="btn-primary text-lg px-10 py-4 flex items-center gap-2 mx-auto"
+            className="btn-primary text-base px-8 py-4 flex items-center gap-2 mx-auto shadow-lg"
           >
-            START THE QUIZ 🎬
+            I ACCEPT MY POOR DECISIONS 💀
             <ArrowRight size={18} />
           </button>
           <p className="text-[#6b7280] text-xs mt-4">
-            Entertainment only · 100% Unqualified comedy engine
+            12 Questions • 100% Unqualified Comedy Director
           </p>
         </motion.div>
       )}
@@ -379,7 +531,7 @@ export default function QuizPage() {
               {/* Question header */}
               <div className="text-center mb-8 max-w-lg">
                 <div className="inline-block text-xs font-title text-yellow-400 uppercase tracking-widest bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20 mb-3">
-                  Step {step} of {totalSteps}
+                  Question {step} of {totalSteps}
                 </div>
                 <h2 className="font-title text-2xl sm:text-3xl font-bold text-[#f0ece8] leading-snug mb-2">
                   {currentQuestion.title}
@@ -396,14 +548,14 @@ export default function QuizPage() {
                 {currentQuestion.type === "name" && (
                   <NameInput
                     value={getCurrentAnswer()}
-                    onChange={(v) => handleAnswer("name", v)}
+                    onChange={(v) => handleRawAnswer("name", v)}
                   />
                 )}
 
                 {currentQuestion.type === "universe" && (
                   <UniverseSelector
                     selected={getCurrentAnswer()}
-                    onSelect={(id) => handleAnswer("universe", id)}
+                    onSelect={(id) => handleRawAnswer("universe", id)}
                   />
                 )}
 
@@ -411,7 +563,7 @@ export default function QuizPage() {
                   <RoleSelector
                     universeId={(answers.universe as string) ?? "fantasy"}
                     selected={getCurrentAnswer()}
-                    onSelect={(id) => handleAnswer("role", id)}
+                    onSelect={(id) => handleRawAnswer("role", id)}
                   />
                 )}
 
@@ -419,7 +571,7 @@ export default function QuizPage() {
                   <SingleSelectGrid
                     options={currentQuestion.options}
                     selected={getCurrentAnswer()}
-                    onSelect={(id) => handleAnswer(currentQuestion.id, id)}
+                    onSelect={handleOptionSelect}
                   />
                 )}
               </div>

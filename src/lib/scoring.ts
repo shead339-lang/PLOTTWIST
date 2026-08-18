@@ -1,5 +1,6 @@
 import { ARCHETYPES, COMPANIONS, PLOT_TWISTS, VILLAINS } from "@/data/characters";
 import { getUniverse } from "@/data/universes";
+import { QUESTIONS } from "@/data/questions";
 import type { QuizAnswers } from "@/lib/validation";
 
 export interface AttributeScores {
@@ -18,6 +19,7 @@ export interface AttributeScores {
   optimism: number;
   mystery: number;
   leadership: number;
+  confidence: number;
 }
 
 export interface UnreliableStat {
@@ -140,6 +142,51 @@ export interface AudienceReaction {
   quote: string;
 }
 
+// ─── Roast Engine Interfaces ──────────────────────────────────
+export interface RoastReceipt {
+  questionsAnswered: number;
+  goodDecisions: number;
+  badDecisions: number;
+  questionableDecisions: number;
+  redFlags: number;
+  commonSense: number;
+  confidence: number;
+  chaos: number;
+  luck: number;
+  survival: number;
+  totalDamage: number;
+  finalVerdict: string;
+}
+
+export interface WorstDecisionInfo {
+  questionNumber: number;
+  questionTitle: string;
+  answerChosen: string;
+  directorReview: string;
+  evidence: string;
+}
+
+export interface QuestionableClickInfo {
+  questionNumber: number;
+  questionTitle: string;
+  answerChosen: string;
+  explanation: string;
+}
+
+export interface RoastPersonality {
+  title: string;
+  emoji: string;
+  tagline: string;
+  description: string;
+}
+
+export interface RoastLevelVariants {
+  friendly: string;
+  savage: string;
+  nuclear: string;
+  unnecessary: string;
+}
+
 export interface MovieProfile {
   // User basics
   name: string;
@@ -183,8 +230,6 @@ export interface MovieProfile {
   inventory: InventoryItem[];
   secretItem: { name: string; description: string; emoji: string };
   scientificFuture: FutureEvent[];
-  roast: string;
-  harderRoast: string;
   achievements: AchievementItem[];
   randomEvents: string[];
   boxOffice: BoxOfficeData;
@@ -203,10 +248,21 @@ export interface MovieProfile {
   merchandise: MerchandiseItem[];
   comedyScore: ComedyScoreData;
 
+  // Deep Roast Evidence Engine
+  roastReceipt: RoastReceipt;
+  worstDecision: WorstDecisionInfo;
+  mostQuestionableClick: QuestionableClickInfo;
+  thingsYouAdmitted: string[];
+  roastPersonality: RoastPersonality;
+  roastLevels: RoastLevelVariants;
+  roastEvidenceList: string[];
+  roast: string;
+  harderRoast: string;
+
   // Tone metadata
-  comedyLevel: number; // 0-1
-  dramaLevel: number;  // 0-1
-  darkLevel: number;   // 0-1
+  comedyLevel: number;
+  dramaLevel: number;
+  darkLevel: number;
   storyTone: string;
 }
 
@@ -214,6 +270,7 @@ const SCORE_KEYS: (keyof AttributeScores)[] = [
   "bravery", "intelligence", "chaos", "creativity", "loyalty",
   "ambition", "humor", "romance", "independence", "risk",
   "patience", "darkness", "optimism", "mystery", "leadership",
+  "confidence",
 ];
 
 function initScores(): AttributeScores {
@@ -282,6 +339,7 @@ function selectArchetype(scores: AttributeScores) {
     risk: "reluctant_hero",
     patience: "loyal_guardian",
     optimism: "chosen_hero",
+    confidence: "reluctant_hero",
   };
 
   const fallbackId = fallbacks[topAttr] ?? "unqualified_hero";
@@ -346,21 +404,61 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
     SCORE_KEYS.map((k) => [k, 0])
   );
 
-  const { QUESTIONS } = require("@/data/questions");
+  const roastEvidenceList: string[] = [];
+  const thingsYouAdmitted: string[] = [];
+  let badDecisionsCount = 0;
+  let questionableDecisionsCount = 0;
+  let redFlagsCount = 0;
+  let goodDecisionsCount = 0;
 
-  // Score each answer
+  interface ChosenOptionMeta {
+    questionStep: number;
+    questionTitle: string;
+    label: string;
+    evidence: string;
+    severity: number;
+    directorReaction?: string;
+  }
+
+  const chosenOptionsList: ChosenOptionMeta[] = [];
+
+  // Evaluate each question & collect evidence
   for (const question of QUESTIONS) {
     if (!question.options) continue;
     const rawAnswer = answers[question.id as keyof QuizAnswers];
     if (!rawAnswer) continue;
     const answerIds = typeof rawAnswer === "string" ? rawAnswer.split(",") : [rawAnswer];
+
     for (const ansId of answerIds) {
       const trimmedId = String(ansId).trim();
-      const option = question.options.find(
-        (o: { id: string; scoringEffects?: Record<string, number> }) => o.id === trimmedId
-      );
-      if (option?.scoringEffects) {
-        addEffects(rawScores, option.scoringEffects);
+      const option = question.options.find((o) => o.id === trimmedId);
+      if (option) {
+        if (option.scoringEffects) {
+          addEffects(rawScores, option.scoringEffects);
+        }
+        if (option.evidence) {
+          roastEvidenceList.push(option.evidence);
+        }
+        if (option.isBadDecision) {
+          badDecisionsCount++;
+          questionableDecisionsCount++;
+        } else if (option.isRedFlag) {
+          redFlagsCount++;
+          questionableDecisionsCount++;
+        } else {
+          goodDecisionsCount++;
+        }
+
+        thingsYouAdmitted.push(`Admitted they would choose "${option.label}"`);
+
+        chosenOptionsList.push({
+          questionStep: question.step,
+          questionTitle: question.title,
+          label: option.label,
+          evidence: option.evidence || option.label,
+          severity: option.severity || 5,
+          directorReaction: option.directorReaction,
+        });
       }
     }
   }
@@ -372,9 +470,10 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
     addEffects(rawScores, role.scoringBoosts);
   }
 
-  // Add default boosts for comedy
-  rawScores.humor = (rawScores.humor ?? 0) + 15;
-  rawScores.chaos = (rawScores.chaos ?? 0) + 20;
+  // Boost chaos and humor
+  rawScores.humor = (rawScores.humor ?? 0) + 20;
+  rawScores.chaos = (rawScores.chaos ?? 0) + (badDecisionsCount * 8) + 15;
+  rawScores.confidence = (rawScores.confidence ?? 0) + 40;
 
   const scores = normalize(rawScores);
   const archetype = selectArchetype(scores);
@@ -383,91 +482,107 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
   const companion = selectCompanion(answers.companion);
   const tone = determineTone(scores);
 
-  const LABELS: Record<string, Record<string, string>> = {
-    situation: {
-      under_control: "Everything Is Under Control (Suspicious)",
-      everything_at_once: "Everything Is Happening At Once",
-      surviving: "Just Barely Surviving",
-      getting_rich: "Trying To Become Rich",
-      relationship: "Relationship Complications",
-      no_idea: "Honestly No Idea",
-    },
-    severity: {
-      mild: "Mild (“I'll probably be fine”)",
-      concerning: "Concerning (“We should probably talk”)",
-      very_concerning: "Very Concerning (“Call the wizard”)",
-      ridiculous: "Absolutely Ridiculous (“Cancel the movie”)",
-      no_saving: "There Is No Saving Me (“Great for the box office”)",
-    },
-    problem_solving: {
-      plan: "Making a 47-Step Plan",
-      ignore: "Ignoring It Completely",
-      coffee: "Drinking Excessive Coffee",
-      ask_friend: "Calling a Friend in Panic",
-      hope: "Hoping the Universe Fixes It",
-      make_worse: "Making the Situation Significantly Worse",
-    },
-    weakness: {
-      procrastination: "Legendary Procrastination",
-      overthinking: "Chronic Overthinking",
-      too_trusting: "Trusting the Wrong Person",
-      spending: "Spending Money Recklessly",
-      ego: "Unearned Confidence",
-      phone: "Phone at 3% Battery",
-      say_yes: "“I'll do it tomorrow”",
-      i_am_the_problem: "Honestly, I Am The Problem",
-    },
-    emergency_strategy: {
-      fight: "Fighting Immediately",
-      strategy: "Making an Overly Elaborate Plan",
-      run: "Tactical Retreat (Running Away)",
-      call: "Calling a Friend in Tears",
-      coffee_emergency: "Making Coffee First",
-      nap: "Taking a Quick Nap",
-      pretend: "Pretending Not to See Anything",
-    },
-    weapon: {
-      sword: "Legendary Sword",
-      staff: "Magic Staff",
-      chair: "The Chair of Destiny",
-      spoon: "Magical Spoon",
-      phone_relic: "Almost-Dead Phone (3% Battery)",
-      coffee_relic: "Emergency Coffee (PWR 99)",
-      forbidden_book: "Book of Forbidden Knowledge",
-      common_sense: "Common Sense (Fragile)",
-    },
-    companion: {
-      dragon: "Ember the Dragon",
-      talking_cat: "Professor Whiskers",
-      wolf: "Shadow the Wolf",
-      robot: "ARLO-7",
-      goblin: "Tiny Angry Goblin",
-      best_friend: "Loyal Best Friend",
-    },
-    sacrifice: {
-      power: "their magical powers",
-      wealth: "their accumulated wealth",
-      reputation: "their reputation",
-      freedom: "their freedom",
-      screen_time: "their daily screen time",
-      nothing: "absolutely nothing (found a chaotic loophole)",
-    },
-    ending: {
-      heroic: "Heroic Victory (Confused, but Victorious)",
-      happy: "Happy Ending (With Sequel Hints)",
-      tragic: "Tragic & Dramatic (Excessive Rain)",
-      become_villain: "Become the Villain (Better Outfits)",
-      rule: "Rule the Kingdom (Still Not Reading Emails)",
-      sequel: "Leave It Open for Part 2",
-    },
+  // Identify Worst Decision
+  const sortedBySeverity = [...chosenOptionsList].sort((a, b) => b.severity - a.severity);
+  const worst = sortedBySeverity[0] || {
+    questionStep: 6,
+    questionTitle: "You have 1 hour to solve your biggest problem.",
+    label: "Make the situation significantly worse",
+    evidence: "Turns minor inconveniences into apocalyptic wars.",
+    severity: 10,
+    directorReaction: "He did, in fact, make it significantly worse.",
   };
 
-  const get = (field: string, id: string) => {
-    if (!id) return id;
-    const ids = id.split(",").map((s) => s.trim()).filter(Boolean);
-    const labels = ids.map((item) => LABELS[field]?.[item] ?? item);
-    return labels.join(", ");
+  const worstDecision: WorstDecisionInfo = {
+    questionNumber: worst.questionStep,
+    questionTitle: worst.questionTitle,
+    answerChosen: worst.label,
+    directorReview: worst.directorReaction || "The director has officially marked this as a critical plot hazard.",
+    evidence: worst.evidence,
   };
+
+  // Identify Most Questionable Click
+  const mostQuestionable = sortedBySeverity[1] || worst;
+  const mostQuestionableClick: QuestionableClickInfo = {
+    questionNumber: mostQuestionable.questionStep,
+    questionTitle: mostQuestionable.questionTitle,
+    answerChosen: mostQuestionable.label,
+    explanation: `Why? Because apparently "${mostQuestionable.label}" is your preferred tactical survival doctrine.`,
+  };
+
+  // Assign Roast Personality Archetype
+  let roastPersonality: RoastPersonality;
+  if (scores.chaos > 80 && badDecisionsCount >= 4) {
+    roastPersonality = {
+      title: "THE HUMAN PLOT TWIST",
+      emoji: "🧨",
+      tagline: "Nobody knows what you're going to do next. Including you.",
+      description: "You don't just participate in the story — you actively derail the script at every turn on pure chaotic impulse.",
+    };
+  } else if (answers.weakness === "procrastination" || answers.problem_solving === "ignore") {
+    roastPersonality = {
+      title: "THE PROFESSIONAL PROCRASTINATOR",
+      emoji: "🛋️",
+      tagline: "Converting today's minor problem into tomorrow's three-alarm emergency.",
+      description: "Your relationship with deadlines is strictly long-distance. Tomorrow is doing Olympian heavy lifting in your life.",
+    };
+  } else if (scores.confidence > 75 && scores.intelligence < 40) {
+    roastPersonality = {
+      title: "THE CONFIDENT IDIOT",
+      emoji: "🗿",
+      tagline: "Has never let a complete lack of information interfere with supreme confidence.",
+      description: "You approach every dragon fight with the confidence of someone who has a plan. Unfortunately, nobody has located the plan.",
+    };
+  } else if (answers.emergency_strategy === "pretend" || answers.situation === "under_control") {
+    roastPersonality = {
+      title: "THE MASTER OF EXCUSES",
+      emoji: "🎭",
+      tagline: "If excuses were currency, you'd own several sovereign nations.",
+      description: "You have mastered the ancient martial art of looking innocent while the entire kingdom burns behind you.",
+    };
+  } else if (answers.weakness === "overthinking" || answers.problem_solving === "plan") {
+    roastPersonality = {
+      title: "THE OVERTHINKING MACHINE",
+      emoji: "🧠",
+      tagline: "Can turn 'What should I eat?' into a six-part existential documentary.",
+      description: "You spent 58 minutes designing color-coded risk matrices while the Dark Lord's army was actively kicking down the front door.",
+    };
+  } else {
+    roastPersonality = {
+      title: "THE ACCIDENTAL SURVIVOR",
+      emoji: "💀",
+      tagline: "You shouldn't have survived Act 1. Yet somehow, here you are.",
+      description: "Your survival rate is 100%, entirely because the villains keep getting distracted by how confusing your decisions are.",
+    };
+  }
+
+  // Roast Receipt
+  const totalDamage = clamp(Math.min(99, 50 + (badDecisionsCount * 7) + (redFlagsCount * 5) + Math.floor(Math.random() * 8)));
+  const roastReceipt: RoastReceipt = {
+    questionsAnswered: 12,
+    goodDecisions: Math.max(1, goodDecisionsCount),
+    badDecisions: Math.max(2, badDecisionsCount),
+    questionableDecisions: Math.max(3, questionableDecisionsCount),
+    redFlags: Math.max(2, redFlagsCount),
+    commonSense: clamp(Math.max(6, 100 - (badDecisionsCount * 14))),
+    confidence: clamp(scores.confidence || 94),
+    chaos: clamp(scores.chaos || 88),
+    luck: clamp(100 - totalDamage + 25),
+    survival: clamp(Math.max(14, 100 - (badDecisionsCount * 12))),
+    totalDamage,
+    finalVerdict: "“You are not a main character. You're the plot twist.”",
+  };
+
+  // Roast Level Variants
+  const roastLevels: RoastLevelVariants = {
+    friendly: `You are a lovable protagonist with great intentions, though your decision-making occasionally leaves the kingdom's advisors gently weeping in the hallway.`,
+    savage: `You have the confidence of a billionaire and the tactical planning skills of a baked potato. You don't make bad decisions; you give them full-time executive careers.`,
+    nuclear: `You possessed 12 opportunities to make a rational choice, and you treated common sense like an optional terms-of-service agreement. If this movie had a budget of ₹12, you would invest ₹11 in the villain's pyramid scheme.`,
+    unnecessary: `You are a walking OSHA violation. When destiny arrived, you put it on hold to make coffee, adopt a 40-ton gold-eating dragon, and bring a living-room chair to an apocalyptic duel. Absolutely unnecessary. Would watch again.`,
+  };
+
+  const roast = roastLevels.savage;
+  const harderRoast = roastLevels.nuclear;
 
   const KINGDOMS_BY_UNIVERSE: Record<string, string[]> = {
     fantasy: [
@@ -476,44 +591,32 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
       "The Gilded Duchy of Oakhaven",
       "Sunken Isles of Moros",
       "Duskfall Archipelago",
-      "Solas Peak",
-      "The High Kingdom of Kael-Tiras",
     ],
     scifi: [
       "Neo-Veridia Prime",
       "Sector 42-B Orbital",
       "The Chronos Colony",
       "Astraea Star-Spire",
-      "Vanguard Station 9",
-      "Helix Nebula Outpost",
     ],
     magical_academy: [
       "The Arcane Spires of Ravenhurst",
       "Oakhaven College of Sorcery",
       "St. Celestia Academy",
-      "The Grand Archives of Sylveria",
-      "Astral Spire Institute",
     ],
     pirate: [
       "The Crimson Tides",
       "Port Blackwater",
       "Isle of Whispering Skulls",
-      "The Gilded Cove",
-      "Kraken's Trench",
     ],
     superhero: [
       "Apex Metropolis",
       "Iron City Prime",
       "Neo-Centropolis",
-      "Titan Heights",
-      "Vigilance Bay",
     ],
     horror_comedy: [
       "Spooksville Hollow",
       "Gloomhaven Woods",
       "Castle Macabre",
-      "The Whispering Bog of Oakhaven",
-      "Phantom Pines",
     ],
   };
 
@@ -549,17 +652,17 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
   ];
 
   const lifeMechanics: LifeMechanic = {
-    status: get("situation", answers.situation).toUpperCase(),
+    status: answers.situation.toUpperCase().replace("_", " "),
     difficulty: "☠️☠️☠️☠️☠️",
-    mission: `Somehow conquer "${get("situation", answers.situation)}" without losing sanity`,
+    mission: `Somehow survive "${answers.situation.replace("_", " ")}" without alerting the kingdom`,
     progressPercent: Math.floor(25 + Math.random() * 25),
-    boss: `THE DEADLINE & ${get("weakness", answers.weakness).toUpperCase()}`,
+    boss: `THE DEADLINE & ${answers.weakness.toUpperCase().replace("_", " ")}`,
     specialAbility: '"I\'ll start tomorrow."',
     abilityEffectiveness: "2%",
   };
 
   const inventory: InventoryItem[] = [
-    { name: get("weapon", answers.weapon), power: 88, emoji: "⚔️" },
+    { name: answers.weapon.replace("_", " "), power: 88, emoji: "⚔️" },
     { name: companion.label, power: 94, emoji: companion.emoji || "🐉" },
     { name: "Almost-Dead Phone (3%)", power: 4, emoji: "📱" },
     { name: "Emergency Coffee", power: 99, emoji: "☕" },
@@ -593,9 +696,6 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
     },
   ];
 
-  const roast = `You have ${get("emergency_strategy", answers.emergency_strategy)} and ${get("weapon", answers.weapon)}, but also ${get("weakness", answers.weakness)}. So basically, you're the kind of hero who survives not because of your master plan, but because the villain keeps missing. Your greatest superpower isn't your weapon — it's other people's poor decision-making.`;
-  const harderRoast = `You possess the legendary ability to give someone their 19th second chance while the entire kingdom is screaming 'STOP TRUSTING THIS PERSON'. If this movie had a sequel budget of ₹12, you would accidentally invest it in the villain's crypto scheme.`;
-
   const achievements: AchievementItem[] = [
     {
       id: "procrastinator",
@@ -610,6 +710,12 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
       description: "Somehow made the entire kingdom's collapse all about your personal journey.",
     },
     {
+      id: "walking_disaster",
+      icon: "🧨",
+      title: "Walking Disaster",
+      description: `Logged ${badDecisionsCount} catastrophic choices in under three minutes.`,
+    },
+    {
       id: "companion_whisperer",
       icon: "🐉",
       title: "Companion Whisperer",
@@ -621,12 +727,6 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
       title: "Accidental Hero",
       description: "Defeated the boss while trying to find the bathroom.",
     },
-    {
-      id: "questionable_decisions",
-      icon: "🤡",
-      title: "Questionable Decision Maker",
-      description: "Made 847 decisions. Exactly 3 were praised by scholars.",
-    },
   ];
 
   const randomEvents = [
@@ -634,7 +734,7 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
     `🐉 ${companion.label} has started a YouTube gaming channel. It already has more followers than the kingdom's military.`,
     `👑 You have accidentally been crowned ruler of ${kingdomName} because you signed a receipt without reading.`,
     "💰 Someone who wronged you three years ago unexpectedly owes you ₹500.",
-    `⚔️ Your ${get("weapon", answers.weapon)} made a weird noise and now only speaks fluent French.`,
+    `⚔️ Your weapon made a weird noise and now only speaks fluent French.`,
     "🍕 A pizza arrives at your fortress. Nobody ordered it. The villain paid for extra garlic sauce.",
     "👻 A ghost appears to haunt you, but sees your schedule and decides you have enough going on.",
     "📱 You accidentally butt-dialed the Dark Lord's castle. They listened to your playlist for 40 minutes.",
@@ -643,7 +743,7 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
   const boxOffice: BoxOfficeData = {
     audienceRating: "⭐⭐⭐⭐⭐ (4.9/5)",
     chaosRating: "🔥🔥🔥🔥🔥 (11/10)",
-    survivalProbability: "☠️ 31%",
+    survivalProbability: `${roastReceipt.survival}%`,
     criticalReview: '"Nobody knows what actually happened, but somehow it was the most entertaining spectacle of the decade."',
     openingWeekend: "₹847 Crore",
     productionBudget: "₹12",
@@ -653,16 +753,15 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
   const awards = [
     { icon: "🥇", title: "Best Accidental Hero", subtitle: "Defeated destiny on pure improvisation" },
     { icon: "🏆", title: "Most Unnecessary Plot Twist", subtitle: "Even the narrator was visibly surprised" },
-    { icon: "🏆", title: "Best Use of a Questionable Weapon", subtitle: `Mastered the ${get("weapon", answers.weapon)}` },
+    { icon: "🏆", title: "Best Use of a Questionable Weapon", subtitle: "Executed with 100% confidence" },
     { icon: "🏆", title: "Most Likely to Survive by Accident", subtitle: "100% survival rate despite all odds" },
     { icon: "🏆", title: "Worst Decision Made with Supreme Confidence", subtitle: "Executed with 100% charisma" },
   ];
 
-  // Brand New Comedy Feature Data:
-  const narratorInterruption = `We're going to stop right here. ${answers.name}, why would you choose "${get("problem_solving", answers.problem_solving)}" in that situation? Seriously. Why? ...Anyway, let's keep watching.`;
+  const narratorInterruption = `We're going to stop right here. ${answers.name}, why would you choose "${worst.label}" in that situation? Seriously. Why? ...Anyway, let's keep watching.`;
 
   const audienceReactions: AudienceReaction[] = [
-    { user: "Audience Member #1", quote: "Why did they do that? Is there a doctor in the kingdom?" },
+    { user: "Audience Member #1", quote: "Why did they do that? Is there an adult in the kingdom?" },
     { user: "Audience Member #2", quote: "I have no idea what's happening, but the dragon is cool." },
     { user: "Audience Member #3", quote: "This plan is catastrophic. Somehow, it is working." },
   ];
@@ -701,7 +800,7 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
   ];
 
   const survivalBoard: SurvivalEntity[] = [
-    { entity: `${answers.name} (Hero)`, rate: "87%", note: "Plot armor detected", color: "text-yellow-400" },
+    { entity: `${answers.name} (Hero)`, rate: `${roastReceipt.survival}%`, note: "Plot armor detected", color: "text-yellow-400" },
     { entity: `${companion.label}`, rate: "92%", note: "Smarter than everyone", color: "text-green-400" },
     { entity: `${cleanVillainLabel}`, rate: "4%", note: "Tragic monologuing hazard", color: "text-red-400" },
     { entity: "Random Guard #7", rate: "1%", note: "Said 'what was that noise?'", color: "text-gray-400" },
@@ -710,23 +809,23 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
   ];
 
   const aiJudgement: AIJudgement = {
-    answerQuality: "72%",
-    commonSense: "14%",
-    confidence: "96%",
-    planning: "Not detected",
-    riskOfMakingWorse: "89%",
+    answerQuality: `${Math.max(40, 95 - (badDecisionsCount * 10))}%`,
+    commonSense: `${roastReceipt.commonSense}%`,
+    confidence: `${roastReceipt.confidence}%`,
+    planning: badDecisionsCount >= 3 ? "Not detected" : "Questionable",
+    riskOfMakingWorse: `${clamp(50 + (badDecisionsCount * 8))}%`,
     recommendation: "“Good luck. You are going to need it.”",
   };
 
   const fakeNews: FakeNewsItem = {
     headline: `LOCAL PERSON SOMEHOW SURVIVES ANOTHER MONDAY`,
     dateline: `${kingdomName} — 11:42 PM`,
-    body: `Authorities in ${kingdomName} are completely confused after ${answers.name} successfully solved a crisis using "${get("emergency_strategy", answers.emergency_strategy)}". Witnesses reported seeing ${answers.name} holding coffee and making decisions with 'concerningly supreme confidence'.`,
+    body: `Authorities in ${kingdomName} are completely confused after ${answers.name} successfully solved a crisis using "${answers.emergency_strategy.replace("_", " ")}". Witnesses reported seeing ${answers.name} holding coffee and making decisions with 'concerningly supreme confidence'.`,
   };
 
   const kingdomAlert: KingdomAlertItem = {
     title: `🚨 KINGDOM-WIDE ALERT`,
-    alertMessage: `${answers.name} has made another executive decision regarding ${get("situation", answers.situation)}.`,
+    alertMessage: `${answers.name} has made another executive decision regarding ${answers.situation.replace("_", " ")}.`,
     advisory: `Experts strongly advise staying indoors. ${companion.label} has officially refused to comment.`,
   };
 
@@ -769,11 +868,11 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
 
   const comedyScore: ComedyScoreData = {
     comedy: 97,
-    chaos: 84,
-    commonSense: 6,
+    chaos: scores.chaos,
+    commonSense: roastReceipt.commonSense,
     plotArmor: 100,
-    decisionQuality: 13,
-    survival: 85,
+    decisionQuality: Math.max(10, 100 - (badDecisionsCount * 15)),
+    survival: roastReceipt.survival,
     mainCharacterEnergy: 94,
     sequelChance: 99,
     verdict: "“Absolutely unnecessary. Would watch again.”",
@@ -787,21 +886,21 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
     actualArchetype: archetype.id,
     archetypeLabel: archetype.label,
     archetypeDescription: archetype.description,
-    situation: get("situation", answers.situation),
-    severity: get("severity", answers.severity),
-    quest: `Conquer ${get("situation", answers.situation)}`,
-    strength: get("weapon", answers.weapon),
-    weakness: get("weakness", answers.weakness),
-    problemSolvingStyle: get("problem_solving", answers.problem_solving),
-    emergencyStrategy: get("emergency_strategy", answers.emergency_strategy),
-    weapon: get("weapon", answers.weapon),
+    situation: answers.situation.replace("_", " "),
+    severity: answers.severity.replace("_", " "),
+    quest: `Conquer ${answers.situation.replace("_", " ")}`,
+    strength: answers.weapon.replace("_", " "),
+    weakness: answers.weakness.replace("_", " "),
+    problemSolvingStyle: answers.problem_solving.replace("_", " "),
+    emergencyStrategy: answers.emergency_strategy.replace("_", " "),
+    weapon: answers.weapon.replace("_", " "),
     companion: answers.companion,
     companionLabel: companion.label,
     power: "Infinite Plot Armor",
     fear: "Monday Morning & Adulting",
     trust: "Their Questionable Intuition",
-    sacrifice: get("sacrifice", answers.sacrifice),
-    endingPreference: get("ending", answers.ending),
+    sacrifice: answers.sacrifice.replace("_", " "),
+    endingPreference: answers.ending.replace("_", " "),
     villain: villain.id,
     villainLabel: cleanVillainLabel,
     plotTwist: plotTwist.label,
@@ -811,8 +910,6 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
     inventory,
     secretItem,
     scientificFuture,
-    roast,
-    harderRoast,
     achievements,
     randomEvents,
     boxOffice,
@@ -828,6 +925,15 @@ export function buildMovieProfile(answers: QuizAnswers): MovieProfile {
     fakeAd,
     merchandise,
     comedyScore,
+    roastReceipt,
+    worstDecision,
+    mostQuestionableClick,
+    thingsYouAdmitted,
+    roastPersonality,
+    roastLevels,
+    roastEvidenceList,
+    roast,
+    harderRoast,
     ...tone,
   };
 }
