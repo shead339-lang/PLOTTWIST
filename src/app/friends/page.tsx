@@ -3,18 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X, Users, Film, ArrowRight, Flame, ShieldAlert, Sparkles, Copy, Check } from "lucide-react";
+import { Plus, X, Users, Film, ArrowRight, Flame, ShieldAlert, Sparkles, Copy, Check, Dices } from "lucide-react";
 import { UNIVERSES } from "@/data/universes";
 
-const MAX_FRIENDS = 6;
+const MAX_FRIENDS = 10;
 
 const GROUP_ROLES = [
   {
     id: "hero",
-    label: "The Hero",
+    label: "The Main Character",
     emoji: "🦸",
     desc: "Chosen by destiny. Zero preparation.",
-    roast: "Somehow became the main character despite having zero qualifications and negative common sense.",
+    roast: "Somehow became the protagonist despite having zero qualifications and negative common sense.",
   },
   {
     id: "villain",
@@ -24,40 +24,64 @@ const GROUP_ROLES = [
     roast: "Has been quietly planning this betrayal since the group chat was created in 2021.",
   },
   {
+    id: "traitor",
+    label: "The Traitor",
+    emoji: "🗡️",
+    desc: "94% betrayal probability. They're nice though.",
+    roast: "Smiles enthusiastically in every group photo while secretly negotiating with the Dark Lord.",
+  },
+  {
     id: "comic_relief",
     label: "Comic Relief",
     emoji: "🤡",
     desc: "Arrived late with snacks. Saved the universe.",
-    roast: "Contributes absolutely nothing to the combat mission but somehow secures 80% of the screen time.",
-  },
-  {
-    id: "dragon_rider",
-    label: "Dragon Rider",
-    emoji: "🐉",
-    desc: "Befriended a mythical beast. Doesn't do paperwork.",
-    roast: "Adopted a 40-ton flying monster specifically to avoid parallel parking and basic responsibilities.",
+    roast: "Contributes absolutely nothing to combat but somehow secures 80% of the screen time.",
   },
   {
     id: "first_to_die",
     label: "First to Die",
     emoji: "💀",
-    desc: "Gave a heartfelt speech in Chapter 1. Bad sign.",
+    desc: "Gave a heartfelt speech in Scene 1. Bad sign.",
     roast: "Gave a sentimental speech about how close the friendship is. Guaranteed eliminated before Scene 3.",
   },
   {
-    id: "traitor",
-    label: "The Traitor",
-    emoji: "🗡️",
-    desc: "94% betrayal probability. They're nice though.",
-    roast: "Smiles enthusiastically in every selfie while secretly negotiating with the Dark Lord's union.",
+    id: "secret_boss",
+    label: "Secret Final Boss",
+    emoji: "👑",
+    desc: "Was pulling the strings all along.",
+    roast: "Acted clueless the whole time while running a shadow syndicate behind the scenes.",
   },
   {
-    id: "sidekick",
-    label: "The Sidekick",
-    emoji: "🤝",
-    desc: "Does 80% of the actual heavy lifting.",
-    roast: "Doing all the tactical planning, emotional labor, and spell-casting while the Hero takes all the glory.",
+    id: "most_useless",
+    label: "Most Useless in Combat",
+    emoji: "🫥",
+    desc: "0% combat stats. 100% emotional vibes.",
+    roast: "Their primary survival strategy is standing behind other people and screaming.",
   },
+  {
+    id: "mastermind",
+    label: "The Mastermind",
+    emoji: "🧠",
+    desc: "Has 47 color-coded backup plans.",
+    roast: "Spent 4 hours making spreadsheets for a 10-minute battle.",
+  },
+  {
+    id: "survivor",
+    label: "The Pure Survivor",
+    emoji: "🏃",
+    desc: "Refuses to die on principle.",
+    roast: "Will literally sacrifice the entire party to make it to the credits alive.",
+  },
+];
+
+const MOST_LIKELY_QUESTIONS = [
+  "Who is most likely to betray the group for ₹500?",
+  "Who is most likely to say 'I am on the way' while still in bed?",
+  "Who is most likely to become the villain for the outfits?",
+  "Who is most likely to die first in a horror movie?",
+  "Who is most likely to accidentally become ruler of a foreign kingdom?",
+  "Who is most likely to start a drama in the group chat and leave?",
+  "Who is most likely to survive a zombie apocalypse on pure luck?",
 ];
 
 export interface BattleStats {
@@ -92,29 +116,30 @@ function generateGroupStory(
   const hero = assignments.find((a) => a.role.id === "hero")?.name ?? names[0];
   const villain = assignments.find((a) => a.role.id === "villain")?.name;
   const traitor = assignments.find((a) => a.role.id === "traitor")?.name;
-  const sidekick = assignments.find((a) => a.role.id === "sidekick")?.name;
   const comic = assignments.find((a) => a.role.id === "comic_relief")?.name;
-  const dragonRider = assignments.find((a) => a.role.id === "dragon_rider")?.name;
   const firstToDie = assignments.find((a) => a.role.id === "first_to_die")?.name;
-  const traitorChance = Math.floor(80 + Math.random() * 19) + "%";
+  const secretBoss = assignments.find((a) => a.role.id === "secret_boss")?.name;
+  const mastermind = assignments.find((a) => a.role.id === "mastermind")?.name;
+  const survivor = assignments.find((a) => a.role.id === "survivor")?.name;
+  const traitorChance = Math.floor(84 + Math.random() * 15) + "%";
 
   const shuffledNames = [...names].sort(() => Math.random() - 0.5);
 
   const battleStats: BattleStats = {
     betrayer: {
       name: traitor ?? shuffledNames[0],
-      pct: Math.floor(85 + Math.random() * 14),
+      pct: Math.floor(88 + Math.random() * 11),
     },
     survivor: {
-      name: hero ?? (shuffledNames[1] || names[0]),
-      pct: Math.floor(88 + Math.random() * 11),
+      name: survivor ?? hero ?? (shuffledNames[1] || names[0]),
+      pct: Math.floor(92 + Math.random() * 7),
     },
     runner: {
       name: comic ?? (shuffledNames[2] || names[0]),
-      pct: Math.floor(92 + Math.random() * 7),
+      pct: Math.floor(94 + Math.random() * 5),
     },
     accidentalHero: {
-      name: sidekick ?? dragonRider ?? (shuffledNames[3] || names[0]),
+      name: mastermind ?? (shuffledNames[3] || names[0]),
       pct: Math.floor(90 + Math.random() * 9),
     },
     mostChaotic: {
@@ -127,9 +152,9 @@ function generateGroupStory(
     },
   };
 
-  const title = `THE ${names.length} CHAOTIC CHAMPIONS OF ${(universeData?.vocabulary.setting ?? "THE REALM").toUpperCase()}`;
+  const title = `THE ${names.length} CHAMPIONS OF ${(universeData?.vocabulary.setting ?? "THE REALM").toUpperCase()}`;
   const tagline = `${names.length} friends. ${names.length - 1} of them are ready. One of them is ${comic ?? names[names.length - 1]}.`;
-  const story = `When the ${universeData?.vocabulary.villain ?? "Dark Lord"} threatened the realm, the ancient prophecy called for exactly ${names.length} champions. ${hero} accepted the quest without reading the terms and conditions. ${sidekick ? `${sidekick} read all 40 pages of terms and sighed deeply.` : ""} ${villain ? `Meanwhile, ${villain} had already constructed a 47-step master plan with color-coded charts.` : ""} ${traitor ? `${traitor} was enthusiastically supportive throughout — suspiciously so.` : ""} ${firstToDie ? `${firstToDie} gave a very touching speech early on, which the director marked as an immediate red flag.` : ""} ${dragonRider ? `${dragonRider} showed up with a flying mythical beast that refused to parallel park.` : ""} ${comic ? `${comic} arrived late with pizza, which somehow saved the universe.` : ""} Together, they argued about everything, survived every trap, and saved the day on 100% pure chaos.`;
+  const story = `When destiny knocked on the door of ${universeData?.name ?? "the kingdom"}, exactly ${names.length} champions answered. ${hero} took command without checking the manual. ${mastermind ? `${mastermind} immediately constructed 47 color-coded battle plans.` : ""} ${villain ? `Meanwhile, ${villain} had already constructed a villainous monologue.` : ""} ${traitor ? `${traitor} was smiling supportively while sending coordinates to enemy scouts.` : ""} ${firstToDie ? `${firstToDie} gave a touching speech about loyalty and was immediately flagged as high casualty risk.` : ""} ${secretBoss ? `Behind the curtain, ${secretBoss} was quietly manipulating the stock market of magic.` : ""} ${comic ? `${comic} arrived late with food and accidentally solved the ancient prophecy.` : ""} Together, they argued about everything and saved the realm on 100% pure chaos.`;
 
   return { title, tagline, story, traitorChance, battleStats };
 }
@@ -140,6 +165,8 @@ export default function FriendsPage() {
   const [selectedUniverse, setSelectedUniverse] = useState("");
   const [step, setStep] = useState<"names" | "universe" | "result">("names");
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<"movie" | "likely">("movie");
+  const [likelyVotes, setLikelyVotes] = useState<Record<number, string>>({});
   const [result, setResult] = useState<{
     assignments: { name: string; role: (typeof GROUP_ROLES)[0] }[];
     groupStory: ReturnType<typeof generateGroupStory>;
@@ -170,7 +197,7 @@ export default function FriendsPage() {
   };
 
   const shareText = result
-    ? `🎬 OUR FRIEND GROUP MOVIE: "${result.groupStory.title}"\n${result.assignments.map((a) => `• ${a.name}: ${a.role.label} (${a.role.emoji})`).join("\n")}\n\nFind out your role:`
+    ? `🎬 OUR FRIEND GROUP MOVIE: "${result.groupStory.title}"\n${result.assignments.map((a) => `• ${a.name}: ${a.role.label} (${a.role.emoji})`).join("\n")}\n\nCheck our Group Roast Receipt:`
     : "";
 
   const copyGroupLink = () => {
@@ -194,13 +221,13 @@ export default function FriendsPage() {
           </button>
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-purple-400/30 bg-purple-400/5 text-purple-300 text-xs font-title uppercase tracking-widest mb-4">
             <Users size={14} />
-            PlotTwist Group Mode
+            PlotTwist Group Mode (2–10 Friends)
           </div>
           <h1 className="font-dramatic text-3xl sm:text-5xl font-black text-gold-gradient glow-text-gold mb-3">
-            ROAST YOUR FRIEND GROUP
+            ROAST YOUR ENTIRE FRIEND GROUP
           </h1>
           <p className="text-[#d1c8b8] text-sm sm:text-base max-w-lg mx-auto">
-            Add 2–6 friends. The algorithm will assign roles, expose who betrays everyone, and generate your collective disaster movie.
+            Add 2–10 friends. The system will assign roles, expose who betrays everyone, and generate your collective disaster movie.
           </p>
         </div>
 
@@ -218,7 +245,7 @@ export default function FriendsPage() {
                 Step 1: Who is in the cast?
               </h2>
               <p className="text-[#9ca3af] text-xs mb-6">
-                Enter each friend's name. (2–6 friends recommended)
+                Enter each friend's name. (2–10 friends supported)
               </p>
 
               <div className="space-y-3 mb-6">
@@ -335,97 +362,162 @@ export default function FriendsPage() {
                 </p>
               </div>
 
-              {/* 📁 GROUP EVIDENCE DASHBOARD */}
-              <div className="card-glass rounded-2xl border border-red-500/30 p-6">
-                <h3 className="font-title font-bold text-sm uppercase tracking-widest text-red-400 mb-4 flex items-center gap-2">
-                  <ShieldAlert size={16} />
-                  📁 GROUP EVIDENCE & SUSPICION REPORT
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs text-center">
-                  <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
-                    <div className="text-[10px] text-[#6b7280]">Most Chaotic</div>
-                    <div className="text-yellow-400 font-bold font-title">
-                      {result.groupStory.battleStats.mostChaotic.name} ({result.groupStory.battleStats.mostChaotic.pct}%)
-                    </div>
-                  </div>
-                  <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
-                    <div className="text-[10px] text-[#6b7280]">Most Suspicious</div>
-                    <div className="text-red-400 font-bold font-title">
-                      {result.groupStory.battleStats.betrayer.name} ({result.groupStory.battleStats.betrayer.pct}%)
-                    </div>
-                  </div>
-                  <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
-                    <div className="text-[10px] text-[#6b7280]">Least Useful in Combat</div>
-                    <div className="text-gray-400 font-bold font-title">
-                      {result.groupStory.battleStats.leastUseful.name} ({result.groupStory.battleStats.leastUseful.pct}%)
-                    </div>
-                  </div>
-                  <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
-                    <div className="text-[10px] text-[#6b7280]">Likely to Betray</div>
-                    <div className="text-red-500 font-bold font-title">
-                      {result.groupStory.battleStats.betrayer.name} ({result.groupStory.traitorChance})
-                    </div>
-                  </div>
-                  <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
-                    <div className="text-[10px] text-[#6b7280]">Definitely Survives</div>
-                    <div className="text-green-400 font-bold font-title">
-                      {result.groupStory.battleStats.survivor.name} ({result.groupStory.battleStats.survivor.pct}%)
-                    </div>
-                  </div>
-                  <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
-                    <div className="text-[10px] text-[#6b7280]">Runs Away First</div>
-                    <div className="text-amber-400 font-bold font-title">
-                      {result.groupStory.battleStats.runner.name} ({result.groupStory.battleStats.runner.pct}%)
-                    </div>
-                  </div>
-                </div>
+              {/* Mode Switcher */}
+              <div className="flex justify-center gap-2 mb-4">
+                <button
+                  onClick={() => setActiveTab("movie")}
+                  className={`py-2 px-5 rounded-full text-xs font-title font-bold transition-all ${
+                    activeTab === "movie"
+                      ? "bg-yellow-400 text-black shadow-lg"
+                      : "bg-black/30 text-[#9ca3af] border border-white/5"
+                  }`}
+                >
+                  🎬 Group Movie & Dossier
+                </button>
+                <button
+                  onClick={() => setActiveTab("likely")}
+                  className={`py-2 px-5 rounded-full text-xs font-title font-bold transition-all ${
+                    activeTab === "likely"
+                      ? "bg-yellow-400 text-black shadow-lg"
+                      : "bg-black/30 text-[#9ca3af] border border-white/5"
+                  }`}
+                >
+                  🎯 Who Is Most Likely To?
+                </button>
               </div>
 
-              {/* Role Assignments with Individual Roasts */}
-              <div className="card-glass rounded-2xl border border-white/8 p-6">
-                <h3 className="font-title font-bold text-sm uppercase tracking-widest text-yellow-400 mb-4">
-                  🎭 INDIVIDUAL CHARACTER ROASTS
-                </h3>
-                <div className="space-y-3">
-                  {result.assignments.map((a, i) => (
-                    <motion.div
-                      key={a.name}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      className="bg-black/30 border border-white/5 rounded-xl p-4 flex items-start gap-3.5 text-xs"
-                    >
-                      <span className="text-3xl flex-shrink-0">{a.role.emoji}</span>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[#f0ece8] font-bold text-sm">{a.name}</span>
-                          <span className="text-yellow-400 font-title font-bold text-xs uppercase tracking-wider">
-                            {a.role.label}
-                          </span>
-                        </div>
-                        <p className="text-[#9ca3af] italic mb-1.5 leading-relaxed">
-                          "{a.role.roast}"
-                        </p>
-                        <div className="text-[11px] text-[#6b7280]">
-                          Speciality: {a.role.desc}
+              {activeTab === "movie" ? (
+                <>
+                  {/* 📁 GROUP ROAST RECEIPT & SUSPICION REPORT */}
+                  <div className="card-glass rounded-2xl border border-red-500/30 p-6">
+                    <h3 className="font-title font-bold text-sm uppercase tracking-widest text-red-400 mb-4 flex items-center gap-2">
+                      <ShieldAlert size={16} />
+                      🧾 GROUP ROAST RECEIPT & SUSPICION REPORT
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs text-center mb-4">
+                      <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
+                        <div className="text-[10px] text-[#6b7280]">Most Chaotic</div>
+                        <div className="text-yellow-400 font-bold font-title">
+                          {result.groupStory.battleStats.mostChaotic.name} (94%)
                         </div>
                       </div>
-                    </motion.div>
-                  ))}
+                      <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
+                        <div className="text-[10px] text-[#6b7280]">Most Suspicious</div>
+                        <div className="text-red-400 font-bold font-title">
+                          {result.groupStory.battleStats.betrayer.name} (91%)
+                        </div>
+                      </div>
+                      <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
+                        <div className="text-[10px] text-[#6b7280]">Least Useful in Combat</div>
+                        <div className="text-gray-400 font-bold font-title">
+                          {result.groupStory.battleStats.leastUseful.name} (97%)
+                        </div>
+                      </div>
+                      <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
+                        <div className="text-[10px] text-[#6b7280]">Likely to Betray</div>
+                        <div className="text-red-500 font-bold font-title">
+                          {result.groupStory.battleStats.betrayer.name} ({result.groupStory.traitorChance})
+                        </div>
+                      </div>
+                      <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
+                        <div className="text-[10px] text-[#6b7280]">Definitely Survives</div>
+                        <div className="text-green-400 font-bold font-title">
+                          {result.groupStory.battleStats.survivor.name} (92%)
+                        </div>
+                      </div>
+                      <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
+                        <div className="text-[10px] text-[#6b7280]">Runs Away First</div>
+                        <div className="text-amber-400 font-bold font-title">
+                          {result.groupStory.battleStats.runner.name} (94%)
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-center text-xs text-yellow-400 italic">
+                      “The director officially regrets casting this group.”
+                    </div>
+                  </div>
+
+                  {/* Individual Character Roasts */}
+                  <div className="card-glass rounded-2xl border border-white/8 p-6">
+                    <h3 className="font-title font-bold text-sm uppercase tracking-widest text-yellow-400 mb-4">
+                      🎭 INDIVIDUAL CHARACTER ROASTS
+                    </h3>
+                    <div className="space-y-3">
+                      {result.assignments.map((a, i) => (
+                        <motion.div
+                          key={a.name}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          className="bg-black/30 border border-white/5 rounded-xl p-4 flex items-start gap-3.5 text-xs"
+                        >
+                          <span className="text-3xl flex-shrink-0">{a.role.emoji}</span>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[#f0ece8] font-bold text-sm">{a.name}</span>
+                              <span className="text-yellow-400 font-title font-bold text-xs uppercase tracking-wider">
+                                {a.role.label}
+                              </span>
+                            </div>
+                            <p className="text-[#9ca3af] italic mb-1.5 leading-relaxed">
+                              "{a.role.roast}"
+                            </p>
+                            <div className="text-[11px] text-[#6b7280]">
+                              Speciality: {a.role.desc}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Group Script */}
+                  <div className="card-glass rounded-2xl border border-white/8 p-6">
+                    <h3 className="font-title font-bold text-sm uppercase tracking-widest text-yellow-400 mb-3">
+                      🎬 THE SCRIPT
+                    </h3>
+                    <p className="text-[#d1c8b8] text-xs leading-relaxed leading-6">
+                      {result.groupStory.story}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                /* "WHO IS MOST LIKELY TO?" MINI-GAME */
+                <div className="card-glass rounded-2xl border border-yellow-400/30 p-6 space-y-4">
+                  <h3 className="font-title font-bold text-base text-yellow-400 uppercase tracking-wide flex items-center gap-2">
+                    <Dices size={18} />
+                    WHO IS MOST LIKELY TO?
+                  </h3>
+                  <p className="text-xs text-[#9ca3af]">
+                    Vote in your group chat who fits each questionable scenario:
+                  </p>
+
+                  <div className="space-y-3">
+                    {MOST_LIKELY_QUESTIONS.map((q, qIdx) => (
+                      <div key={qIdx} className="bg-black/30 p-3.5 rounded-xl border border-white/5 text-xs space-y-2">
+                        <div className="font-bold text-[#f0ece8]">{q}</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {validNames.map((name) => (
+                            <button
+                              key={name}
+                              onClick={() => setLikelyVotes({ ...likelyVotes, [qIdx]: name })}
+                              className={`py-1 px-2.5 rounded-lg text-[11px] font-title transition-colors ${
+                                likelyVotes[qIdx] === name
+                                  ? "bg-yellow-400 text-black font-bold"
+                                  : "bg-white/5 text-[#9ca3af] hover:text-[#f0ece8]"
+                              }`}
+                            >
+                              {name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Group Story */}
-              <div className="card-glass rounded-2xl border border-white/8 p-6">
-                <h3 className="font-title font-bold text-sm uppercase tracking-widest text-yellow-400 mb-3">
-                  🎬 THE SCRIPT
-                </h3>
-                <p className="text-[#d1c8b8] text-xs leading-relaxed leading-6">
-                  {result.groupStory.story}
-                </p>
-              </div>
-
-              {/* Share */}
+              {/* Share Bar */}
               <div className="card-glass rounded-2xl border border-yellow-400/30 p-6 text-center">
                 <h3 className="font-title font-bold text-sm uppercase tracking-widest text-yellow-400 mb-2">
                   SHARE INTO THE GROUP CHAT

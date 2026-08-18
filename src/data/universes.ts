@@ -194,6 +194,81 @@ export const UNIVERSES: Universe[] = [
       { id: "rival", label: "The Rival", emoji: "😤", description: "Top of the class. For now. Until the hero gets their act together.", scoringBoosts: { ambition: 8, intelligence: 6, independence: 5 } },
     ],
   },
+  {
+    id: "zombie_apocalypse",
+    name: "Zombie Apocalypse",
+    emoji: "🧟",
+    tagline: "Rule #1: Cardio. Rule #2: Don't look at the bite mark.",
+    description: "Abandoned malls, questionable survival tactics, and canned beans.",
+    gradient: "from-emerald-950 via-green-900 to-lime-600",
+    accentColor: "#84cc16",
+    bgColor: "#030d04",
+    vocabulary: {
+      kingdom: "Safe Zone",
+      villain: "The Alpha Zombie / The Mad General",
+      power: "Survival Grit",
+      weapon: "Baseball Bat with Nails",
+      companion: "Stray German Shepherd",
+      setting: "The Wasteland",
+      quest: "Reach the Sanctuary",
+    },
+    roles: [
+      { id: "hero", label: "The Survivor", emoji: "🏃", description: "Refuses to die on principle.", scoringBoosts: { bravery: 8, risk: 6 } },
+      { id: "scavenger", label: "The Scavenger", emoji: "🎒", description: "Found 40 boxes of Twinkies and a machete.", scoringBoosts: { intelligence: 7, independence: 8 } },
+      { id: "medic", label: "The Medic", emoji: "🩹", description: "Has two band-aids and an aspirin. Good luck.", scoringBoosts: { loyalty: 8, patience: 6 } },
+      { id: "bitten_guy", label: "The 'I'm Fine' Guy", emoji: "😬", description: "Hiding a suspicious arm scratch under a jacket.", scoringBoosts: { chaos: 9, darkness: 6 } },
+    ],
+  },
+  {
+    id: "corporate_office",
+    name: "Corporate Chaos",
+    emoji: "💼",
+    tagline: "Per my previous email, the building is on fire.",
+    description: "Passive-aggressive Slack messages, budget cuts, and infinite meetings.",
+    gradient: "from-slate-900 via-blue-950 to-indigo-600",
+    accentColor: "#38bdf8",
+    bgColor: "#020617",
+    vocabulary: {
+      kingdom: "Headquarters",
+      villain: "The CEO / HR Committee",
+      power: "Passive Aggression",
+      weapon: "Color-Coded Spreadsheet",
+      companion: "The Burned-Out Colleague",
+      setting: "The Open-Plan Office",
+      quest: "Survive Until 5:00 PM",
+    },
+    roles: [
+      { id: "overworked_intern", label: "The Intern", emoji: "☕", description: "Running on 3 energy drinks and sheer terror.", scoringBoosts: { patience: 8, humor: 6 } },
+      { id: "middle_manager", label: "Middle Manager", emoji: "📊", description: "Added 4 syncs to discuss the upcoming sync.", scoringBoosts: { ambition: 8, chaos: 5 } },
+      { id: "quiet_quitter", label: "The Quiet Quitter", emoji: "🫥", description: "Has been on 'Away' status since March.", scoringBoosts: { independence: 9, laziness: 7 } },
+      { id: "tech_support", label: "Tech Support Guru", emoji: "💻", description: "Asked you to restart. You didn't. Now suffer.", scoringBoosts: { intelligence: 9, darkness: 4 } },
+    ],
+  },
+  {
+    id: "bollywood_drama",
+    name: "Bollywood Blockbuster",
+    emoji: "🎬",
+    tagline: "3 dance sequences, 47 slow-mo shots, zero physics.",
+    description: "Family melodrama, dramatic rain storms, and 5 unexpected plot twists.",
+    gradient: "from-rose-900 via-pink-800 to-amber-500",
+    accentColor: "#fb7185",
+    bgColor: "#160007",
+    vocabulary: {
+      kingdom: "The Grand Estate",
+      villain: "The Strict Father-in-Law / Corrupt Landlord",
+      power: "Emotional Charisma",
+      weapon: "Dramatic Monologue",
+      companion: "The Loyal Childhood Friend",
+      setting: "Mumbai High Society",
+      quest: "Win the Love & Defeat Destiny",
+    },
+    roles: [
+      { id: "hero", label: "The Dramatic Hero", emoji: "🕺", description: "Enters in slow motion with high-powered wind machines.", scoringBoosts: { romance: 10, bravery: 7 } },
+      { id: "rebel", label: "The Rebel Lover", emoji: "💃", description: "Refuses the arranged alliance for true chaotic love.", scoringBoosts: { romance: 9, independence: 8 } },
+      { id: "villain", label: "The Evil Mogul", emoji: "🦁", description: "Laughs loudly while stroking a white cat in a penthouse.", scoringBoosts: { darkness: 9, ambition: 9 } },
+      { id: "best_friend", label: "The Wedding Crasher", emoji: "🎉", description: "Brings the backup dancers and ruins the reception.", scoringBoosts: { humor: 9, chaos: 7 } },
+    ],
+  },
 ];
 
 export const getUniverse = (id: string): Universe | undefined =>
@@ -201,3 +276,4 @@ export const getUniverse = (id: string): Universe | undefined =>
 
 export const getRolesForUniverse = (universeId: string): Role[] =>
   UNIVERSES.find((u) => u.id === universeId)?.roles ?? [];
+

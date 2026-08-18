@@ -27,8 +27,10 @@ import {
   XCircle,
   HelpCircle,
   TrendingDown,
+  ChevronDown,
+  Sparkle,
 } from "lucide-react";
-import type { MovieProfile } from "@/lib/scoring";
+import type { MovieProfile, ChoiceRoastItem, AlternateTimeline } from "@/lib/scoring";
 import type { StoryResult } from "@/lib/validation";
 import { UNIVERSES } from "@/data/universes";
 import Link from "next/link";
@@ -54,7 +56,7 @@ function DramaticRevealModal({
     {
       icon: "💀",
       title: `${data.profile.name.toUpperCase()}...`,
-      subtitle: "We analyzed your answers.",
+      subtitle: "We analyzed your 12 decisions.",
       body: "We have some serious concerns. 💀",
       btnText: "WHAT DID YOU FIND? ⏳",
     },
@@ -70,7 +72,7 @@ function DramaticRevealModal({
       title: "YOUR SINGLE WORST DECISION",
       subtitle: data.profile.worstDecision?.answerChosen?.toUpperCase() || data.profile.weakness.toUpperCase(),
       body: `Question: "${data.profile.worstDecision?.questionTitle || ""}"\n\nDirector's Review: ${data.profile.worstDecision?.directorReview || ""}`,
-      btnText: "ENTER MY MOVIE & RECEIPT 🎬",
+      btnText: "ENTER MY MOVIE PREMIERE 🎬",
     },
   ];
 
@@ -141,8 +143,8 @@ function RoastReceiptCard({ profile }: { profile: MovieProfile }) {
   const receipt = profile.roastReceipt || {
     questionsAnswered: 12,
     goodDecisions: 2,
-    badDecisions: 6,
-    questionableDecisions: 4,
+    badDecisions: 5,
+    questionableDecisions: 5,
     redFlags: 7,
     commonSense: 23,
     confidence: 94,
@@ -150,14 +152,13 @@ function RoastReceiptCard({ profile }: { profile: MovieProfile }) {
     luck: 17,
     survival: 29,
     totalDamage: 91,
-    finalVerdict: "“You are not a main character. You're the plot twist.”",
+    finalVerdict: "“Congratulations. You have been thoroughly investigated.”",
   };
 
   return (
     <div className="relative max-w-md mx-auto my-8 font-mono">
-      {/* Receipt styling container */}
       <div className="bg-[#120d1c] text-[#f0ece8] border-2 border-dashed border-yellow-400/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-        {/* Top Receipt Header */}
+        {/* Header */}
         <div className="text-center pb-4 border-b-2 border-dashed border-white/20 mb-4">
           <div className="text-3xl mb-1">🧾</div>
           <h3 className="font-title font-black text-xl text-yellow-400 tracking-wider">
@@ -197,7 +198,11 @@ function RoastReceiptCard({ profile }: { profile: MovieProfile }) {
         <div className="space-y-2 text-xs border-b-2 border-dashed border-white/20 pb-4 mb-4">
           <div className="flex justify-between">
             <span className="text-[#9ca3af]">Common Sense</span>
-            <span className="font-bold text-red-400">{receipt.commonSense}%</span>
+            <span className="font-bold text-red-400">{profile.commonSenseScore || receipt.commonSense}%</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-[#9ca3af]">Normality Level</span>
+            <span className="font-bold text-red-400">{profile.normalityScore || 14}%</span>
           </div>
           <div className="flex justify-between">
             <span className="text-[#9ca3af]">Unearned Confidence</span>
@@ -226,7 +231,7 @@ function RoastReceiptCard({ profile }: { profile: MovieProfile }) {
           {receipt.finalVerdict}
         </div>
 
-        {/* Fake Barcode */}
+        {/* Barcode */}
         <div className="text-center pt-2 border-t-2 border-dashed border-white/20">
           <div className="tracking-[0.4em] text-lg text-[#9ca3af] select-none font-bold">
             ||| | |||| || | ||| |||| | ||
@@ -238,128 +243,166 @@ function RoastReceiptCard({ profile }: { profile: MovieProfile }) {
   );
 }
 
-// ─── 3. Worst Decision & Questionable Click Cards ────────────
-function WorstDecisionCards({ profile }: { profile: MovieProfile }) {
-  const worst = profile.worstDecision;
-  const click = profile.mostQuestionableClick;
-  const admissions = profile.thingsYouAdmitted || [];
+// ─── 3. "Roast My Choices" (Itemized 12 Questions Breakdown) ──
+function RoastMyChoicesAccordion({ items }: { items: ChoiceRoastItem[] }) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  if (!items || items.length === 0) return null;
 
   return (
-    <div className="space-y-4">
-      {worst && (
-        <div className="card-glass rounded-2xl border border-red-500/40 p-6">
-          <div className="flex items-center gap-2 text-xs font-title font-bold text-red-400 uppercase tracking-widest mb-2">
-            <Flame size={16} />
-            🏆 YOUR SINGLE WORST DECISION
-          </div>
-          <h4 className="font-title font-bold text-base text-[#f0ece8] mb-1">
-            "{worst.answerChosen}"
-          </h4>
-          <p className="text-[#9ca3af] text-xs mb-3">
-            In response to: <em>"{worst.questionTitle}"</em>
-          </p>
-          <div className="bg-black/40 border border-red-500/20 rounded-xl p-3.5 text-xs text-[#d1c8b8] leading-relaxed">
-            <strong>Director's Review:</strong> {worst.directorReview}
-          </div>
-        </div>
-      )}
+    <div className="card-glass rounded-2xl border border-yellow-400/30 p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-title font-bold text-sm uppercase tracking-widest text-yellow-400 flex items-center gap-2">
+          🔍 ROAST MY CHOICES (ALL 12 QUESTIONS)
+        </h3>
+        <span className="text-[10px] text-[#9ca3af]">Click to expand</span>
+      </div>
+      <p className="text-xs text-[#9ca3af]">
+        See the exact evidence and director's review logged for each of your 12 clicks:
+      </p>
 
-      {click && (
-        <div className="card-glass rounded-2xl border border-amber-500/30 p-6">
-          <div className="flex items-center gap-2 text-xs font-title font-bold text-amber-400 uppercase tracking-widest mb-2">
-            <AlertTriangle size={16} />
-            🖱️ YOUR MOST QUESTIONABLE CLICK
-          </div>
-          <h4 className="font-title font-bold text-sm text-[#f0ece8] mb-1">
-            Question #{click.questionNumber}: {click.answerChosen}
-          </h4>
-          <p className="text-xs text-[#d1c8b8] leading-relaxed mt-1">
-            {click.explanation}
-          </p>
-        </div>
-      )}
+      <div className="space-y-2">
+        {items.map((item, idx) => (
+          <div
+            key={idx}
+            className="border border-white/5 bg-black/30 rounded-xl overflow-hidden"
+          >
+            <button
+              onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
+              className="w-full p-3.5 text-left flex items-center justify-between text-xs hover:bg-white/5 transition-colors"
+            >
+              <div className="flex items-center gap-2.5 flex-1 pr-2 truncate">
+                <span className="text-base">{item.choiceEmoji}</span>
+                <span className="font-bold text-[#f0ece8] truncate">
+                  Q{item.questionNumber}: {item.choiceLabel}
+                </span>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.isNormal ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+                {item.isNormal ? "Normal" : "Questionable"}
+              </span>
+            </button>
 
-      {admissions.length > 0 && (
-        <div className="card-glass rounded-2xl border border-white/8 p-6">
-          <div className="text-xs font-title font-bold text-yellow-400 uppercase tracking-widest mb-3">
-            🧾 THINGS YOU ADMITTED ON RECORD
+            {openIndex === idx && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="px-4 pb-4 pt-1 text-xs border-t border-white/5 space-y-1 bg-black/40"
+              >
+                <div className="text-[11px] text-[#9ca3af]">
+                  <strong>Question:</strong> {item.questionTitle}
+                </div>
+                <div className="text-xs text-yellow-400/90 italic pt-1">
+                  "{item.roast}"
+                </div>
+              </motion.div>
+            )}
           </div>
-          <ul className="space-y-2 text-xs text-[#d1c8b8]">
-            {admissions.slice(0, 5).map((adm, i) => (
-              <li key={i} className="flex items-start gap-2">
-                <span className="text-red-400">•</span>
-                <span>{adm}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 pt-3 border-t border-white/10 text-[11px] text-[#9ca3af] italic">
-            Final Diagnosis: You should probably not be left unsupervised in a fantasy realm.
-          </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }
 
-// ─── 4. Interactive Roast Level Selector ─────────────────────
-function RoastLevelSelector({ profile }: { profile: MovieProfile }) {
-  const [level, setLevel] = useState<"friendly" | "savage" | "nuclear" | "unnecessary">("savage");
-  const levels = profile.roastLevels || {
-    friendly: "You tried your best with the tools available.",
-    savage: profile.roast,
-    nuclear: profile.harderRoast,
-    unnecessary: "You are a walking OSHA violation in every realm.",
-  };
+// ─── 4. "WHAT IF?" Alternate Timelines ───────────────────────
+function AlternateTimelinesCard({ timelines }: { timelines: AlternateTimeline[] }) {
+  const [selectedId, setSelectedId] = useState(timelines[0]?.id || "villain_arc");
+  const selected = timelines.find((t) => t.id === selectedId) || timelines[0];
 
-  const tabs = [
-    { id: "friendly" as const, label: "🙂 Friendly" },
-    { id: "savage" as const, label: "😈 Savage" },
-    { id: "nuclear" as const, label: "💀 Nuclear" },
-    { id: "unnecessary" as const, label: "🔥 Unnecessary" },
-  ];
+  if (!timelines || timelines.length === 0) return null;
 
   return (
     <div className="card-glass rounded-2xl border border-purple-500/30 p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <h3 className="font-title font-bold text-sm uppercase tracking-widest text-purple-300 flex items-center gap-2">
-          🔥 CHOOSE YOUR ROAST LEVEL
+          🔀 WHAT IF? (ALTERNATE TIMELINES)
         </h3>
-        <span className="text-[10px] text-[#9ca3af]">Adjust Severity</span>
+        <span className="text-[10px] text-[#9ca3af]">Multiverse View</span>
       </div>
+      <p className="text-xs text-[#9ca3af] mb-4">
+        Explore alternative versions of your movie based on different life choices:
+      </p>
 
+      {/* Tabs */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-        {tabs.map((t) => (
+        {timelines.map((t) => (
           <button
             key={t.id}
-            onClick={() => setLevel(t.id)}
-            className={`py-2 px-3 rounded-xl text-xs font-title font-bold transition-all ${
-              level === t.id
-                ? "bg-yellow-400 text-black shadow-lg"
+            onClick={() => setSelectedId(t.id)}
+            className={`py-2 px-2.5 rounded-xl text-xs font-title font-bold transition-all text-center ${
+              selectedId === t.id
+                ? "bg-purple-500 text-white shadow-lg"
                 : "bg-black/30 text-[#9ca3af] hover:text-[#f0ece8] border border-white/5"
             }`}
           >
-            {t.label}
+            {t.emoji} {t.title}
           </button>
         ))}
       </div>
 
+      {/* Active Timeline Details */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={level}
+          key={selected.id}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.2 }}
-          className="bg-black/40 border border-white/5 rounded-xl p-4 text-xs text-[#f0ece8] leading-relaxed italic"
+          className="bg-black/40 border border-purple-500/20 rounded-2xl p-4 text-xs space-y-2"
         >
-          "{levels[level]}"
+          <div className="flex items-center justify-between">
+            <span className="font-title font-bold text-purple-300 text-sm">{selected.title}</span>
+            <span className="text-green-400 font-bold text-[11px]">Survival: {selected.survival}</span>
+          </div>
+          <p className="text-[#d1c8b8] leading-relaxed">
+            {selected.synopsis}
+          </p>
+          <div className="pt-2 border-t border-white/10 text-[#9ca3af] text-[11px]">
+            <strong>Timeline Climax:</strong> {selected.ending}
+          </div>
         </motion.div>
       </AnimatePresence>
     </div>
   );
 }
 
-// ─── 5. Movie Poster Card ────────────────────────────────────
+// ─── 5. Movie Premiere Breakdown Grid ────────────────────────
+function MoviePremiereDetails({ profile, story }: { profile: MovieProfile; story: StoryResult }) {
+  return (
+    <div className="card-glass rounded-2xl border border-white/8 p-6 space-y-4">
+      <h3 className="font-title font-bold text-sm uppercase tracking-widest text-yellow-400 mb-2">
+        🎬 MOVIE PREMIERE DOSSIER
+      </h3>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div className="bg-black/40 p-3 rounded-xl border border-white/5">
+          <div className="text-[10px] text-[#6b7280] uppercase">Your Character Role</div>
+          <div className="font-bold text-[#f0ece8] text-sm mt-0.5">{profile.archetypeLabel}</div>
+          <div className="text-[#9ca3af] text-[11px] mt-1">{profile.archetypeDescription}</div>
+        </div>
+
+        <div className="bg-black/40 p-3 rounded-xl border border-white/5">
+          <div className="text-[10px] text-[#6b7280] uppercase">Your Villain</div>
+          <div className="font-bold text-red-400 text-sm mt-0.5">{profile.villainLabel}</div>
+          <div className="text-[#9ca3af] text-[11px] mt-1">Has a 47-step evil plan with color-coded charts.</div>
+        </div>
+
+        <div className="bg-black/40 p-3 rounded-xl border border-white/5">
+          <div className="text-[10px] text-[#6b7280] uppercase">Romantic Subplot</div>
+          <div className="font-bold text-pink-400 text-sm mt-0.5">Deflecting Intimacy with Memes</div>
+          <div className="text-[#9ca3af] text-[11px] mt-1">{profile.romanticSubplot}</div>
+        </div>
+
+        <div className="bg-black/40 p-3 rounded-xl border border-white/5">
+          <div className="text-[10px] text-[#6b7280] uppercase">Fatal Weakness</div>
+          <div className="font-bold text-amber-400 text-sm mt-0.5">{profile.fatalWeakness}</div>
+          <div className="text-[#9ca3af] text-[11px] mt-1">Triggers at the worst possible moment in Scene 2.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── 6. Movie Poster Card ────────────────────────────────────
 function MoviePoster({ data }: { data: MovieData }) {
   const universe = UNIVERSES.find((u) => u.id === data.profile.universe);
   return (
@@ -377,8 +420,8 @@ function MoviePoster({ data }: { data: MovieData }) {
           <span className="text-yellow-400 font-title uppercase tracking-widest bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20">
             {universe?.name ?? data.profile.universe}
           </span>
-          <span className="text-[#9ca3af] text-[10px] uppercase tracking-wider">
-            {data.profile.kingdomName || "PlotTwist Originals"}
+          <span className="text-[#9ca3af] text-[10px] uppercase tracking-wider font-mono">
+            IMDb: 9.2/10 ⭐
           </span>
         </div>
 
@@ -411,18 +454,18 @@ function MoviePoster({ data }: { data: MovieData }) {
           </div>
           <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
             <div className="text-[#6b7280] uppercase tracking-wider text-[10px] mb-0.5">
-              Companion
+              Survival Odds
             </div>
-            <div className="text-[#f0ece8] font-bold truncate">
-              {data.profile.companionLabel}
+            <div className="text-purple-400 font-bold truncate">
+              {data.profile.survivalPercent}%
             </div>
           </div>
           <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
             <div className="text-[#6b7280] uppercase tracking-wider text-[10px] mb-0.5">
-              Villain
+              Production Budget
             </div>
             <div className="text-red-400 font-bold truncate">
-              {data.profile.villainLabel}
+              ₹47.00
             </div>
           </div>
         </div>
@@ -431,10 +474,9 @@ function MoviePoster({ data }: { data: MovieData }) {
           <span className="text-[#9ca3af] font-title uppercase tracking-wider">
             {data.story.genre}
           </span>
-          <div className="flex items-center gap-1.5 text-yellow-400 font-bold">
-            <Star size={14} className="fill-yellow-400" />
-            <span>4.9 / 5</span>
-          </div>
+          <span className="text-yellow-400 text-[10px] font-bold">
+            plottwist.app
+          </span>
         </div>
       </div>
 
@@ -443,7 +485,7 @@ function MoviePoster({ data }: { data: MovieData }) {
   );
 }
 
-// ─── 6. Share Suite with Viral Challenge Hook ────────────────
+// ─── 7. Share Challenge Suite ────────────────────────────────
 function ShareSuite({
   shareCode,
   movieTitle,
@@ -519,7 +561,7 @@ function ShareSuite({
   );
 }
 
-// ─── Main Movie Page Component ───────────────────────────────
+// ─── Main Movie Page ─────────────────────────────────────────
 export default function MoviePage() {
   const { shareCode } = useParams<{ shareCode: string }>();
   const router = useRouter();
@@ -568,7 +610,7 @@ export default function MoviePage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 rounded-full border-2 border-yellow-400 border-t-transparent animate-spin mx-auto mb-4" />
-          <p className="text-[#9ca3af] text-sm">Compiling your roast receipt and movie…</p>
+          <p className="text-[#9ca3af] text-sm">Compiling your roast receipt and movie premiere…</p>
         </div>
       </div>
     );
@@ -591,7 +633,7 @@ export default function MoviePage() {
 
   return (
     <div className="min-h-screen py-10 px-4 max-w-4xl mx-auto space-y-8">
-      {/* 1. Dramatic Step-by-Step Reveal Modal (shown once on fresh generate) */}
+      {/* 1. Dramatic Step-by-Step Reveal Modal (shown on fresh generation) */}
       <AnimatePresence>
         {showIntroModal && (
           <DramaticRevealModal
@@ -624,13 +666,16 @@ export default function MoviePage() {
       {/* 3. The Signature Roast Receipt Card */}
       <RoastReceiptCard profile={movieData.profile} />
 
-      {/* 4. Worst Decision & Questionable Click Cards */}
-      <WorstDecisionCards profile={movieData.profile} />
+      {/* 4. "Roast My Choices" (12 Questions Breakdown) */}
+      <RoastMyChoicesAccordion items={movieData.profile.roastMyChoices || []} />
 
-      {/* 5. Interactive Roast Level Selector */}
-      <RoastLevelSelector profile={movieData.profile} />
+      {/* 5. "WHAT IF?" (Alternate Timelines) */}
+      <AlternateTimelinesCard timelines={movieData.profile.alternateTimelines || []} />
 
-      {/* 6. Cinematic Scenes & Story Showcase with Narrator Commentary */}
+      {/* 6. Movie Premiere Dossier */}
+      <MoviePremiereDetails profile={movieData.profile} story={movieData.story} />
+
+      {/* 7. The Cinematic Script & Climax */}
       <div className="card-glass rounded-3xl p-6 sm:p-8 border border-white/8 space-y-6">
         <div className="border-b border-white/10 pb-4">
           <h3 className="font-title font-bold text-lg text-yellow-400 uppercase tracking-wide">
@@ -648,7 +693,7 @@ export default function MoviePage() {
           </p>
         </div>
 
-        {/* Live Audience Reaction #1 */}
+        {/* Audience Reaction */}
         {movieData.profile.audienceReactions?.[0] && (
           <div className="bg-purple-950/20 border border-purple-500/20 rounded-xl p-3 text-xs text-purple-300 italic flex items-center gap-2">
             <span>👤</span>
@@ -663,7 +708,7 @@ export default function MoviePage() {
           </p>
         </div>
 
-        {/* Narrator Interruption Box */}
+        {/* Narrator Interruption */}
         {movieData.profile.narratorInterruption && (
           <div className="bg-red-950/30 border border-red-500/40 rounded-2xl p-4 text-xs text-red-200 space-y-1 my-4">
             <div className="font-title font-black text-red-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -675,7 +720,7 @@ export default function MoviePage() {
           </div>
         )}
 
-        {/* Quest & Encounter */}
+        {/* Quest & Encounters */}
         <div className="space-y-2 pt-2 border-t border-white/5">
           <p className="text-[#d1c8b8] text-sm leading-relaxed">
             {movieData.story.quest}
@@ -688,7 +733,7 @@ export default function MoviePage() {
           </p>
         </div>
 
-        {/* Scene 3: The Plot Twist */}
+        {/* Plot Twist */}
         <div className="twist-card p-5 rounded-2xl text-center my-4">
           <div className="text-2xl mb-1">🌀</div>
           <div className="font-title text-sm font-bold text-purple-300 uppercase tracking-widest mb-2">
@@ -699,7 +744,7 @@ export default function MoviePage() {
           </p>
         </div>
 
-        {/* Scene 4: Climax & Ending */}
+        {/* Final Battle & Ending */}
         <div className="space-y-3 pt-2 border-t border-white/5">
           <p className="text-[#d1c8b8] text-sm leading-relaxed whitespace-pre-line">
             {movieData.story.finalBattle}
@@ -710,7 +755,7 @@ export default function MoviePage() {
         </div>
       </div>
 
-      {/* 7. Share Challenge Suite */}
+      {/* 8. Share Challenge Suite */}
       <ShareSuite
         shareCode={movieData.shareCode}
         movieTitle={movieData.story.movieTitle}
@@ -718,14 +763,14 @@ export default function MoviePage() {
         roastScore={movieData.profile.roastReceipt?.totalDamage ?? 91}
       />
 
-      {/* 8. Group Movie Viral Hook */}
+      {/* 9. Group Movie Viral Callout */}
       <div className="card-glass rounded-2xl border border-purple-500/30 p-6 text-center bg-gradient-to-r from-purple-950/20 to-indigo-950/20">
         <div className="text-4xl mb-2">👥</div>
         <h3 className="font-title font-bold text-base sm:text-lg text-purple-300 uppercase tracking-wide mb-2">
           ROAST YOUR ENTIRE FRIEND GROUP
         </h3>
         <p className="text-[#d1c8b8] text-xs sm:text-sm max-w-md mx-auto mb-4 leading-relaxed">
-          Create a group movie to discover who betrays everyone, who runs away first, and who dies in Chapter 1!
+          Create a group movie to discover who betrays everyone, who runs away first, and who dies in Scene 1!
         </p>
         <Link
           href="/friends"

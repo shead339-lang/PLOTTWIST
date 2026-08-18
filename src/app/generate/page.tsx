@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 const GENERATION_STEPS = [
-  { icon: "⏳", title: "PROCESSING YOUR LIFE...", message: "Reading your 12 answers with increasing bewilderment…" },
-  { icon: "🧠", title: "ANALYZING DECISIONS...", message: "Searching for evidence of long-term planning…" },
-  { icon: "🧐", title: "ANALYZING QUESTIONABLE DECISIONS...", message: "Found 847 questionable decisions. Proceeding anyway…" },
-  { icon: "💀", title: "RECHECKING QUESTIONABLE DECISIONS...", message: "The writers have ordered pizza. This is going to be cinematic." },
-  { icon: "📜", title: "CONSULTING ANCIENT SCROLLS...", message: "The AI is consulting ancient prophecies. (The wizard is on lunch break)." },
-  { icon: "⚠️", title: "WE HAVE FOUND SEVERAL CONCERNS...", message: "Preparing the Chair of Destiny and emergency budget of ₹12…" },
-  { icon: "🎬", title: "YOUR MOVIE IS READY!", message: "Directing the climax and rendering the Oscars speech…" },
+  { icon: "🎬", title: "THE DIRECTOR IS PANICKING...", message: "Reading your 12 answers with increasing bewilderment…" },
+  { icon: "🧐", title: "ANALYZING QUESTIONABLE DECISIONS...", message: "Searching for evidence of long-term planning (none found)…" },
+  { icon: "😈", title: "FINDING YOUR VILLAIN...", message: "Consulting the Dark Lord's union for a suitable rival…" },
+  { icon: "💀", title: "CALCULATING SURVIVAL PROBABILITY...", message: "Survival odds dropped to 17%. Praying for rain…" },
+  { icon: "💸", title: "HIRING AN UNPAID SCREENWRITER...", message: "Allocating total production budget of ₹47…" },
+  { icon: "🧠", title: "REMOVING ALL COMMON SENSE...", message: "Injecting maximum chaos and questionable choices…" },
+  { icon: "🌧️", title: "ADDING UNNECESSARY DRAMA...", message: "Activating industrial rain machines for the climax…" },
+  { icon: "🧾", title: "YOUR MOVIE & RECEIPT ARE READY!", message: "Printing official Roast Receipt and rolling the red carpet…" },
 ];
 
 export default function GeneratePage() {

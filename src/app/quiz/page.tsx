@@ -15,12 +15,14 @@ function QuizHeader({
   current,
   total,
   roastMeter,
+  normality,
   evidenceCount,
   redFlagCount,
 }: {
   current: number;
   total: number;
   roastMeter: number;
+  normality: number;
   evidenceCount: number;
   redFlagCount: number;
 }) {
@@ -45,23 +47,32 @@ function QuizHeader({
             <FileText size={12} className="text-purple-400" />
             Evidence: <strong className="text-[#f0ece8]">{evidenceCount}</strong> logged
             {redFlagCount > 0 && (
-              <span className="text-red-400 ml-1">({redFlagCount} red flags 🚩)</span>
+              <span className="text-red-400 ml-1">({redFlagCount} 🚩)</span>
             )}
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-[#9ca3af] text-[11px] uppercase font-title tracking-wider">
-            Roast Level
-          </span>
-          <div className="w-16 sm:w-24 bg-white/10 rounded-full h-2 overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-yellow-500 to-red-500 rounded-full"
-              animate={{ width: `${Math.min(100, roastMeter)}%` }}
-              transition={{ duration: 0.5 }}
-            />
+        <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-1.5 text-[11px] text-[#9ca3af]">
+            <span>Normality:</span>
+            <strong className={normality < 30 ? "text-red-400" : "text-green-400"}>
+              {normality}%
+            </strong>
           </div>
-          <span className="font-bold text-red-400 text-xs">{roastMeter}%</span>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[#9ca3af] text-[11px] uppercase font-title tracking-wider">
+              Roast Level
+            </span>
+            <div className="w-16 sm:w-20 bg-white/10 rounded-full h-2 overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-yellow-500 to-red-500 rounded-full"
+                animate={{ width: `${Math.min(100, roastMeter)}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+            <span className="font-bold text-red-400 text-xs">{roastMeter}%</span>
+          </div>
         </div>
       </div>
     </div>
@@ -271,6 +282,7 @@ export default function QuizPage() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [comboCount, setComboCount] = useState(0);
   const [roastMeter, setRoastMeter] = useState(30);
+  const [normality, setNormality] = useState(100);
   const [evidenceCount, setEvidenceCount] = useState(0);
   const [redFlagCount, setRedFlagCount] = useState(0);
   const [showHalfway, setShowHalfway] = useState(false);
@@ -324,10 +336,11 @@ export default function QuizPage() {
     if (opt.isRedFlag) setRedFlagCount((r) => r + 1);
 
     if (opt.isBadDecision || opt.isRedFlag) {
+      setNormality((n) => Math.max(3, n - 14));
       setComboCount((c) => {
         const next = c + 1;
         if (next >= 3) {
-          setToastMessage(`🔥 COMBO x${next}! Stop, you're making this too easy to roast 💀`);
+          setToastMessage(`🔥 CHAOS COMBO x${next}! Stop, you're making this too easy 💀`);
         } else if (opt.directorReaction) {
           setToastMessage(`🎬 Director's note: "${opt.directorReaction}"`);
         }
@@ -336,6 +349,7 @@ export default function QuizPage() {
       setRoastMeter((m) => Math.min(99, m + 8));
     } else {
       setComboCount(0);
+      setNormality((n) => Math.max(3, n - 4));
       if (opt.directorReaction) {
         setToastMessage(`🎬 Director's note: "${opt.directorReaction}"`);
       }
@@ -460,6 +474,7 @@ export default function QuizPage() {
           current={step}
           total={totalSteps}
           roastMeter={roastMeter}
+          normality={normality}
           evidenceCount={evidenceCount}
           redFlagCount={redFlagCount}
         />

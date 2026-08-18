@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PlotTwist — Your Life As A Movie",
     description:
-      "Your real life is boring. Let's turn it into a movie. Answer 15 questions and create your epic cinematic story.",
+      "Your life: the movie nobody asked for. Answer 12 ridiculous questions and get your cinematic movie and roast receipt.",
     type: "website",
     url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://plottwist.app",
   },
