@@ -66,6 +66,13 @@ export default function RootLayout({
           `}
         </Script>
 
+        {/* Google AdSense */}
+        <Script
+          strategy="afterInteractive"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3934139146949195"
+          crossOrigin="anonymous"
+        />
+
         <div className="cinematic-bg" aria-hidden="true" />
         <main className="relative z-10 flex-1">{children}</main>
       </body>
