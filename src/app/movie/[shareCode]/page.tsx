@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -28,21 +28,25 @@ import {
   HelpCircle,
   TrendingDown,
   ChevronDown,
-  Sparkle,
+  Download,
+  ShieldAlert,
+  Swords,
+  Check,
+  Eye,
+  Info,
 } from "lucide-react";
 import type { MovieProfile, ChoiceRoastItem, AlternateTimeline } from "@/lib/scoring";
 import type { StoryResult } from "@/lib/validation";
 import { UNIVERSES } from "@/data/universes";
 import Link from "next/link";
 
-// ─── Types ───────────────────────────────────────────────────
 interface MovieData {
   shareCode: string;
   profile: MovieProfile;
   story: StoryResult;
 }
 
-// ─── 1. Dramatic Step-by-Step Reveal Sequence ────────────────
+// ─── 1. Dramatic Step-by-Step Reveal Modal ───────────────────
 function DramaticRevealModal({
   data,
   onComplete,
@@ -138,8 +142,57 @@ function DramaticRevealModal({
   );
 }
 
-// ─── 2. Signature Roast Receipt Component ────────────────────
+// ─── 2. Top Final Verdict Banner ──────────────────────────────
+function FinalVerdictBanner({ profile }: { profile: MovieProfile }) {
+  return (
+    <div className="card-glass rounded-2xl border border-yellow-400/40 p-5 sm:p-6 bg-gradient-to-r from-[#1b0d2a] via-[#12071f] to-[#1a0f00]">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-xs font-title font-bold uppercase tracking-widest text-yellow-400">
+            <Sparkles size={14} />
+            FINAL VERDICT
+          </div>
+          <h2 className="font-dramatic text-xl sm:text-2xl font-black text-[#f0ece8]">
+            {profile.roastPersonality?.emoji || "🎭"} {profile.roastPersonality?.title || "THE HUMAN PLOT TWIST"}
+          </h2>
+          <p className="text-xs text-[#9ca3af]">
+            "{profile.roastPersonality?.tagline || "Nobody knows what you are going to do next. Including you."}"
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          <div className="bg-red-950/40 border border-red-500/30 px-3.5 py-2 rounded-xl text-center">
+            <div className="text-[10px] text-red-400 uppercase font-bold">Roast Damage</div>
+            <div className="font-title font-black text-xl text-red-400">
+              {profile.roastReceipt?.totalDamage ?? 97}<span className="text-xs text-[#9ca3af]">/100</span>
+            </div>
+          </div>
+          <div className="bg-purple-950/40 border border-purple-500/30 px-3.5 py-2 rounded-xl text-center">
+            <div className="text-[10px] text-purple-300 uppercase font-bold">Survival Odds</div>
+            <div className="font-title font-black text-xl text-purple-300">
+              {profile.survivalPercent}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4 pt-4 border-t border-white/10 text-xs">
+        <div className="flex items-center gap-2 text-[#d1c8b8]">
+          <span className="text-green-400 font-bold">✓ Strength:</span>
+          <span>{profile.biggestStrength}</span>
+        </div>
+        <div className="flex items-center gap-2 text-[#d1c8b8]">
+          <span className="text-red-400 font-bold">⚠️ Problem:</span>
+          <span>{profile.biggestProblem}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── 3. Signature Roast Receipt with "Why?" Score Explainer ───
 function RoastReceiptCard({ profile }: { profile: MovieProfile }) {
+  const [showScoreWhy, setShowScoreWhy] = useState(false);
   const receipt = profile.roastReceipt || {
     questionsAnswered: 12,
     goodDecisions: 2,
@@ -151,12 +204,20 @@ function RoastReceiptCard({ profile }: { profile: MovieProfile }) {
     chaos: 91,
     luck: 17,
     survival: 29,
-    totalDamage: 91,
+    totalDamage: 97,
+    damageFactors: [
+      { label: "Extreme Chaos Quotient", points: 24, emoji: "🧨" },
+      { label: "Questionable Choices Logged", points: 20, emoji: "⚠️" },
+      { label: "Red Flags Ignored", points: 18, emoji: "🚩" },
+      { label: "Unearned Supreme Confidence", points: 15, emoji: "🗿" },
+      { label: "Severe Procrastination Tactics", points: 10, emoji: "😴" },
+      { label: "Delusional Optimism", points: 10, emoji: "🙏" },
+    ],
     finalVerdict: "“Congratulations. You have been thoroughly investigated.”",
   };
 
   return (
-    <div className="relative max-w-md mx-auto my-8 font-mono">
+    <div className="relative font-mono">
       <div className="bg-[#120d1c] text-[#f0ece8] border-2 border-dashed border-yellow-400/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
         {/* Header */}
         <div className="text-center pb-4 border-b-2 border-dashed border-white/20 mb-4">
@@ -177,11 +238,11 @@ function RoastReceiptCard({ profile }: { profile: MovieProfile }) {
             <span className="font-bold">{receipt.questionsAnswered}</span>
           </div>
           <div className="flex justify-between text-green-400">
-            <span>Good Decisions</span>
+            <span>Good Decisions Logged</span>
             <span>+{receipt.goodDecisions}</span>
           </div>
           <div className="flex justify-between text-red-400">
-            <span>Bad Decisions</span>
+            <span>Bad Decisions Logged</span>
             <span>+{receipt.badDecisions}</span>
           </div>
           <div className="flex justify-between text-amber-400">
@@ -218,12 +279,39 @@ function RoastReceiptCard({ profile }: { profile: MovieProfile }) {
           </div>
         </div>
 
-        {/* Total Damage Score */}
-        <div className="text-center py-2 mb-4 bg-red-950/40 border border-red-500/30 rounded-xl">
-          <div className="text-[10px] uppercase tracking-widest text-red-400">TOTAL ROAST DAMAGE</div>
-          <div className="font-title font-black text-3xl text-red-400">
-            {receipt.totalDamage} <span className="text-sm text-[#9ca3af]">/ 100</span>
-          </div>
+        {/* Total Damage Score with Clickable "Why?" Explainer */}
+        <div className="text-center py-3 mb-4 bg-red-950/40 border border-red-500/30 rounded-xl relative">
+          <button
+            onClick={() => setShowScoreWhy(!showScoreWhy)}
+            className="w-full focus:outline-none"
+          >
+            <div className="text-[10px] uppercase tracking-widest text-red-400 flex items-center justify-center gap-1">
+              <span>TOTAL ROAST DAMAGE</span>
+              <Info size={12} className="text-red-400" />
+            </div>
+            <div className="font-title font-black text-3xl text-red-400 mt-0.5">
+              {receipt.totalDamage} <span className="text-sm text-[#9ca3af]">/ 100</span>
+            </div>
+            <div className="text-[10px] text-[#9ca3af] underline mt-1">
+              {showScoreWhy ? "▲ Hide Score Breakdown" : "▼ Click to see why you scored this"}
+            </div>
+          </button>
+
+          {/* Expanded Itemized Damage Factors */}
+          {showScoreWhy && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="mt-3 pt-3 border-t border-red-500/20 text-left px-4 space-y-1.5 text-[11px]"
+            >
+              {(receipt.damageFactors || []).map((f, i) => (
+                <div key={i} className="flex justify-between text-[#d1c8b8]">
+                  <span>{f.emoji} {f.label}</span>
+                  <strong className="text-red-400 font-bold">+{f.points} pts</strong>
+                </div>
+              ))}
+            </motion.div>
+          )}
         </div>
 
         {/* Final Verdict */}
@@ -243,11 +331,15 @@ function RoastReceiptCard({ profile }: { profile: MovieProfile }) {
   );
 }
 
-// ─── 3. "Roast My Choices" (Itemized 12 Questions Breakdown) ──
-function RoastMyChoicesAccordion({ items }: { items: ChoiceRoastItem[] }) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  if (!items || items.length === 0) return null;
+// ─── 4. "Roast My Choices" with Highlighted Worst Decision ───
+function RoastMyChoicesSection({
+  items,
+  worst,
+}: {
+  items: ChoiceRoastItem[];
+  worst?: MovieProfile["worstDecision"];
+}) {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
     <div className="card-glass rounded-2xl border border-yellow-400/30 p-6 space-y-4">
@@ -257,10 +349,27 @@ function RoastMyChoicesAccordion({ items }: { items: ChoiceRoastItem[] }) {
         </h3>
         <span className="text-[10px] text-[#9ca3af]">Click to expand</span>
       </div>
-      <p className="text-xs text-[#9ca3af]">
-        See the exact evidence and director's review logged for each of your 12 clicks:
-      </p>
 
+      {/* 🏆 Highlighted Worst Decision of the Movie */}
+      {worst && (
+        <div className="bg-gradient-to-r from-red-950/60 to-black/60 border border-red-500/50 rounded-2xl p-4 shadow-lg">
+          <div className="flex items-center gap-2 text-xs font-title font-bold text-red-400 uppercase tracking-wider mb-1">
+            <Flame size={15} />
+            🏆 WORST DECISION OF THE MOVIE
+          </div>
+          <div className="font-title font-bold text-sm text-[#f0ece8]">
+            "{worst.answerChosen}"
+          </div>
+          <div className="text-[11px] text-[#9ca3af] mt-0.5">
+            During: <em>"{worst.questionTitle}"</em>
+          </div>
+          <div className="mt-2 text-xs text-red-200/90 italic bg-black/40 p-2.5 rounded-xl border border-red-500/20">
+            <strong>Director's Review:</strong> "{worst.directorReview}"
+          </div>
+        </div>
+      )}
+
+      {/* Itemized 12 Questions Breakdown */}
       <div className="space-y-2">
         {items.map((item, idx) => (
           <div
@@ -277,8 +386,8 @@ function RoastMyChoicesAccordion({ items }: { items: ChoiceRoastItem[] }) {
                   Q{item.questionNumber}: {item.choiceLabel}
                 </span>
               </div>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.isNormal ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
-                {item.isNormal ? "Normal" : "Questionable"}
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${item.badgeBg} ${item.badgeText}`}>
+                {item.classification}
               </span>
             </button>
 
@@ -286,13 +395,19 @@ function RoastMyChoicesAccordion({ items }: { items: ChoiceRoastItem[] }) {
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="px-4 pb-4 pt-1 text-xs border-t border-white/5 space-y-1 bg-black/40"
+                className="px-4 pb-4 pt-2 text-xs border-t border-white/5 space-y-2 bg-black/40"
               >
-                <div className="text-[11px] text-[#9ca3af]">
-                  <strong>Question:</strong> {item.questionTitle}
+                <div>
+                  <span className="text-[#6b7280] uppercase tracking-wider text-[10px] block">Your Choice</span>
+                  <span className="font-medium text-[#f0ece8]">{item.choiceLabel}</span>
                 </div>
-                <div className="text-xs text-yellow-400/90 italic pt-1">
-                  "{item.roast}"
+                <div>
+                  <span className="text-[#6b7280] uppercase tracking-wider text-[10px] block">Evidence Collected</span>
+                  <span className="text-[#d1c8b8]">{item.evidence}</span>
+                </div>
+                <div>
+                  <span className="text-yellow-400/90 uppercase tracking-wider text-[10px] block font-bold">Director's Review</span>
+                  <span className="text-yellow-300/90 italic">"{item.directorReview}"</span>
                 </div>
               </motion.div>
             )}
@@ -303,7 +418,7 @@ function RoastMyChoicesAccordion({ items }: { items: ChoiceRoastItem[] }) {
   );
 }
 
-// ─── 4. "WHAT IF?" Alternate Timelines ───────────────────────
+// ─── 5. Personalized "WHAT IF?" Alternate Timelines ──────────
 function AlternateTimelinesCard({ timelines }: { timelines: AlternateTimeline[] }) {
   const [selectedId, setSelectedId] = useState(timelines[0]?.id || "villain_arc");
   const selected = timelines.find((t) => t.id === selectedId) || timelines[0];
@@ -319,7 +434,7 @@ function AlternateTimelinesCard({ timelines }: { timelines: AlternateTimeline[] 
         <span className="text-[10px] text-[#9ca3af]">Multiverse View</span>
       </div>
       <p className="text-xs text-[#9ca3af] mb-4">
-        Explore alternative versions of your movie based on different life choices:
+        Explore alternate versions of your movie personalized to your specific choices:
       </p>
 
       {/* Tabs */}
@@ -365,7 +480,7 @@ function AlternateTimelinesCard({ timelines }: { timelines: AlternateTimeline[] 
   );
 }
 
-// ─── 5. Movie Premiere Breakdown Grid ────────────────────────
+// ─── 6. Balanced Movie Premiere Dossier (Strength + Problem) ─
 function MoviePremiereDetails({ profile, story }: { profile: MovieProfile; story: StoryResult }) {
   return (
     <div className="card-glass rounded-2xl border border-white/8 p-6 space-y-4">
@@ -374,26 +489,38 @@ function MoviePremiereDetails({ profile, story }: { profile: MovieProfile; story
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-        <div className="bg-black/40 p-3 rounded-xl border border-white/5">
-          <div className="text-[10px] text-[#6b7280] uppercase">Your Character Role</div>
+        <div className="bg-black/40 p-3.5 rounded-xl border border-white/5">
+          <div className="text-[10px] text-[#6b7280] uppercase font-bold">Your Character Role</div>
           <div className="font-bold text-[#f0ece8] text-sm mt-0.5">{profile.archetypeLabel}</div>
           <div className="text-[#9ca3af] text-[11px] mt-1">{profile.archetypeDescription}</div>
         </div>
 
-        <div className="bg-black/40 p-3 rounded-xl border border-white/5">
-          <div className="text-[10px] text-[#6b7280] uppercase">Your Villain</div>
+        <div className="bg-black/40 p-3.5 rounded-xl border border-white/5">
+          <div className="text-[10px] text-[#6b7280] uppercase font-bold">Your Villain</div>
           <div className="font-bold text-red-400 text-sm mt-0.5">{profile.villainLabel}</div>
           <div className="text-[#9ca3af] text-[11px] mt-1">Has a 47-step evil plan with color-coded charts.</div>
         </div>
 
-        <div className="bg-black/40 p-3 rounded-xl border border-white/5">
-          <div className="text-[10px] text-[#6b7280] uppercase">Romantic Subplot</div>
-          <div className="font-bold text-pink-400 text-sm mt-0.5">Deflecting Intimacy with Memes</div>
+        <div className="bg-black/40 p-3.5 rounded-xl border border-white/5">
+          <div className="text-[10px] text-green-400 uppercase font-bold">Your Biggest Strength</div>
+          <div className="font-bold text-green-400 text-sm mt-0.5">Accidental Plot Armor</div>
+          <div className="text-[#9ca3af] text-[11px] mt-1">{profile.biggestStrength}</div>
+        </div>
+
+        <div className="bg-black/40 p-3.5 rounded-xl border border-white/5">
+          <div className="text-[10px] text-red-400 uppercase font-bold">Your Biggest Problem</div>
+          <div className="font-bold text-red-400 text-sm mt-0.5">Yourself</div>
+          <div className="text-[#9ca3af] text-[11px] mt-1">{profile.biggestProblem}</div>
+        </div>
+
+        <div className="bg-black/40 p-3.5 rounded-xl border border-white/5">
+          <div className="text-[10px] text-pink-400 uppercase font-bold">Romantic Subplot</div>
+          <div className="font-bold text-pink-400 text-sm mt-0.5">Deflecting with Memes</div>
           <div className="text-[#9ca3af] text-[11px] mt-1">{profile.romanticSubplot}</div>
         </div>
 
-        <div className="bg-black/40 p-3 rounded-xl border border-white/5">
-          <div className="text-[10px] text-[#6b7280] uppercase">Fatal Weakness</div>
+        <div className="bg-black/40 p-3.5 rounded-xl border border-white/5">
+          <div className="text-[10px] text-amber-400 uppercase font-bold">Fatal Weakness</div>
           <div className="font-bold text-amber-400 text-sm mt-0.5">{profile.fatalWeakness}</div>
           <div className="text-[#9ca3af] text-[11px] mt-1">Triggers at the worst possible moment in Scene 2.</div>
         </div>
@@ -402,160 +529,268 @@ function MoviePremiereDetails({ profile, story }: { profile: MovieProfile; story
   );
 }
 
-// ─── 6. Movie Poster Card ────────────────────────────────────
-function MoviePoster({ data }: { data: MovieData }) {
+// ─── 7. Movie Poster Card with Download / Save Action ────────
+function MoviePosterCard({ data }: { data: MovieData }) {
+  const [downloading, setDownloading] = useState(false);
   const universe = UNIVERSES.find((u) => u.id === data.profile.universe);
+
+  const handleDownload = () => {
+    setDownloading(true);
+    setTimeout(() => {
+      window.print();
+      setDownloading(false);
+    }, 500);
+  };
+
   return (
-    <div
-      id="movie-poster"
-      className="poster-card relative overflow-hidden rounded-3xl max-w-md mx-auto border border-yellow-400/30 shadow-2xl"
-      style={{
-        background: `linear-gradient(160deg, ${universe?.bgColor ?? "#0a0014"} 0%, #1a0030 60%, ${universe?.bgColor ?? "#0a0014"} 100%)`,
-      }}
-    >
-      <div className="h-2 w-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-600" />
+    <div className="space-y-3">
+      <div
+        id="movie-poster"
+        className="poster-card relative overflow-hidden rounded-3xl max-w-lg mx-auto border border-yellow-400/40 shadow-2xl"
+        style={{
+          background: `linear-gradient(160deg, ${universe?.bgColor ?? "#0a0014"} 0%, #1a0030 60%, ${universe?.bgColor ?? "#0a0014"} 100%)`,
+        }}
+      >
+        <div className="h-2 w-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-600" />
 
-      <div className="p-6 sm:p-8 relative">
-        <div className="flex items-center justify-between mb-4 text-xs">
-          <span className="text-yellow-400 font-title uppercase tracking-widest bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20">
-            {universe?.name ?? data.profile.universe}
-          </span>
-          <span className="text-[#9ca3af] text-[10px] uppercase tracking-wider font-mono">
-            IMDb: 9.2/10 ⭐
-          </span>
+        <div className="p-6 sm:p-8 relative">
+          <div className="flex items-center justify-between mb-4 text-xs">
+            <span className="text-yellow-400 font-title uppercase tracking-widest bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20 font-bold">
+              {universe?.name ?? data.profile.universe}
+            </span>
+            <span className="text-[#9ca3af] text-[10px] uppercase tracking-wider font-mono">
+              IMDb: 9.2/10 ⭐
+            </span>
+          </div>
+
+          <h2 className="font-dramatic text-2xl sm:text-4xl font-black text-yellow-400 leading-tight mb-2 glow-text-gold">
+            {data.story.movieTitle}
+          </h2>
+
+          <p className="text-[#d1c8b8] italic text-sm mb-6 leading-relaxed">
+            "{data.story.tagline}"
+          </p>
+
+          <div className="border-t border-yellow-400/20 mb-5" />
+
+          <div className="grid grid-cols-2 gap-3 mb-6 text-xs">
+            <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+              <div className="text-[#6b7280] uppercase tracking-wider text-[10px] mb-0.5">
+                Starring
+              </div>
+              <div className="text-[#f0ece8] font-bold truncate">
+                {data.profile.name}
+              </div>
+            </div>
+            <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+              <div className="text-[#6b7280] uppercase tracking-wider text-[10px] mb-0.5">
+                Roast Archetype
+              </div>
+              <div className="text-yellow-400 font-bold truncate">
+                {data.profile.roastPersonality?.title || data.profile.archetypeLabel}
+              </div>
+            </div>
+            <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+              <div className="text-[#6b7280] uppercase tracking-wider text-[10px] mb-0.5">
+                Survival Odds
+              </div>
+              <div className="text-purple-400 font-bold truncate">
+                {data.profile.survivalPercent}%
+              </div>
+            </div>
+            <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
+              <div className="text-[#6b7280] uppercase tracking-wider text-[10px] mb-0.5">
+                Production Budget
+              </div>
+              <div className="text-red-400 font-bold truncate">
+                ₹47.00
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
+            <span className="text-[#9ca3af] font-title uppercase tracking-wider">
+              {data.story.genre}
+            </span>
+            <span className="text-yellow-400 text-[10px] font-bold">
+              plottwist.app
+            </span>
+          </div>
         </div>
 
-        <h2 className="font-dramatic text-2xl sm:text-3xl font-black text-yellow-400 leading-tight mb-2 glow-text-gold">
-          {data.story.movieTitle}
-        </h2>
-
-        <p className="text-[#d1c8b8] italic text-sm mb-6 leading-relaxed">
-          "{data.story.tagline}"
-        </p>
-
-        <div className="border-t border-yellow-400/20 mb-5" />
-
-        <div className="grid grid-cols-2 gap-3 mb-6 text-xs">
-          <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
-            <div className="text-[#6b7280] uppercase tracking-wider text-[10px] mb-0.5">
-              Starring
-            </div>
-            <div className="text-[#f0ece8] font-bold truncate">
-              {data.profile.name}
-            </div>
-          </div>
-          <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
-            <div className="text-[#6b7280] uppercase tracking-wider text-[10px] mb-0.5">
-              Roast Archetype
-            </div>
-            <div className="text-yellow-400 font-bold truncate">
-              {data.profile.roastPersonality?.title || data.profile.archetypeLabel}
-            </div>
-          </div>
-          <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
-            <div className="text-[#6b7280] uppercase tracking-wider text-[10px] mb-0.5">
-              Survival Odds
-            </div>
-            <div className="text-purple-400 font-bold truncate">
-              {data.profile.survivalPercent}%
-            </div>
-          </div>
-          <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
-            <div className="text-[#6b7280] uppercase tracking-wider text-[10px] mb-0.5">
-              Production Budget
-            </div>
-            <div className="text-red-400 font-bold truncate">
-              ₹47.00
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
-          <span className="text-[#9ca3af] font-title uppercase tracking-wider">
-            {data.story.genre}
-          </span>
-          <span className="text-yellow-400 text-[10px] font-bold">
-            plottwist.app
-          </span>
-        </div>
+        <div className="h-1.5 w-full bg-gradient-to-r from-purple-700 via-purple-400 to-cyan-400" />
       </div>
 
-      <div className="h-1.5 w-full bg-gradient-to-r from-purple-700 via-purple-400 to-cyan-400" />
+      <div className="flex justify-center">
+        <button
+          onClick={handleDownload}
+          disabled={downloading}
+          className="btn-secondary text-xs py-2 px-4 flex items-center gap-1.5 text-[#d1c8b8]"
+        >
+          <Download size={13} />
+          {downloading ? "Preparing Poster..." : "Save / Download Poster"}
+        </button>
+      </div>
     </div>
   );
 }
 
-// ─── 7. Share Challenge Suite ────────────────────────────────
+// ─── 8. Share Suite with 1-on-1 Direct Friend Challenge ───────
 function ShareSuite({
   shareCode,
   movieTitle,
   name,
   roastScore,
+  archetype,
+  survival,
 }: {
   shareCode: string;
   movieTitle: string;
   name: string;
   roastScore: number;
+  archetype: string;
+  survival: number;
 }) {
-  const [copied, setCopied] = useState(false);
+  const [copiedChallenge, setCopiedChallenge] = useState(false);
+  const [showDirectModal, setShowDirectModal] = useState(false);
+  const [friendName, setFriendName] = useState("");
+
   const siteUrl = typeof window !== "undefined" ? window.location.origin : "https://plottwist.app";
   const shareUrl = `${siteUrl}/movie/${shareCode}`;
-  const shareText = `💀 I scored ${roastScore}/100 Roast Damage on PlotTwist! My movie is "${movieTitle}". Think you can make better decisions? Try it here:`;
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const customChallengeText = `I got ${archetype} with ${roastScore}/100 Roast Damage and a ${survival}% survival rate on PlotTwist. Beat that 😂 Make your movie: ${shareUrl}`;
 
-  const nativeShare = () => {
-    if (navigator.share) {
-      navigator.share({ title: movieTitle, text: shareText, url: shareUrl });
-    }
+  const directChallengeText = friendName.trim()
+    ? `Hey ${friendName.trim()}! I scored ${roastScore}/100 Roast Damage with ${archetype} on PlotTwist. I don't think you can make better decisions than me. Prove it here: ${shareUrl}`
+    : customChallengeText;
+
+  const copyGeneral = () => {
+    navigator.clipboard.writeText(customChallengeText);
+    setCopiedChallenge(true);
+    setTimeout(() => setCopiedChallenge(false), 2000);
   };
 
   return (
     <div className="card-glass rounded-2xl border border-yellow-400/30 p-6 text-center">
+      {/* 1-on-1 Challenge Modal */}
+      {showDirectModal && (
+        <div className="fixed inset-0 z-50 bg-[#07030e]/90 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="card-glass border border-yellow-400/30 rounded-2xl p-6 max-w-md w-full text-center space-y-4">
+            <div className="text-3xl">⚔️</div>
+            <h4 className="font-title font-bold text-base text-yellow-400">
+              CHALLENGE ONE FRIEND DIRECTLY
+            </h4>
+            <p className="text-xs text-[#9ca3af]">
+              Enter your friend's name to generate a personalized direct roast challenge:
+            </p>
+            <input
+              type="text"
+              value={friendName}
+              onChange={(e) => setFriendName(e.target.value)}
+              placeholder="Enter friend's name (e.g. Arun, Rahul)"
+              className="input-field w-full text-sm text-center"
+            />
+
+            <div className="bg-black/40 p-3 rounded-xl border border-white/5 text-xs text-[#d1c8b8] italic text-left">
+              "{directChallengeText}"
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowDirectModal(false)}
+                className="btn-secondary flex-1 py-2 text-xs"
+              >
+                Cancel
+              </button>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(directChallengeText)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary flex-1 py-2 text-xs flex items-center justify-center gap-1.5"
+              >
+                📱 Send via WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       <h3 className="font-title font-bold text-base sm:text-lg uppercase tracking-widest text-yellow-400 mb-2">
         🔥 ROAST YOUR FRIENDS
       </h3>
       <p className="text-[#d1c8b8] text-xs max-w-md mx-auto mb-5 leading-relaxed">
-        Send your movie to your friends or group chat and dare them to beat your <strong>{roastScore}/100 Roast Damage</strong>.
+        Dare your friends to beat your <strong>{roastScore}/100 Roast Damage</strong> and <strong>{survival}% survival odds</strong>!
       </p>
+
       <div className="flex flex-wrap justify-center gap-2.5">
         <button
-          onClick={copyLink}
-          className="btn-primary flex items-center gap-2 text-xs py-2.5 px-5 shadow-lg"
+          onClick={() => setShowDirectModal(true)}
+          className="btn-primary flex items-center gap-1.5 text-xs py-2.5 px-5 shadow-lg font-title font-bold"
         >
-          {copied ? <><Link2 size={14} /> Copied Roast Link!</> : <><Copy size={14} /> Copy Roast Challenge</>}
+          <Swords size={14} />
+          🔥 CHALLENGE ONE FRIEND
+        </button>
+
+        <button
+          onClick={copyGeneral}
+          className="btn-secondary flex items-center gap-1.5 text-xs py-2.5 px-4"
+        >
+          {copiedChallenge ? <><Check size={14} /> Copied Challenge!</> : <><Copy size={14} /> Copy Challenge</>}
         </button>
 
         <a
-          href={`https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`}
+          href={`https://wa.me/?text=${encodeURIComponent(customChallengeText)}`}
           target="_blank"
           rel="noopener noreferrer"
           className="btn-secondary flex items-center gap-1.5 text-xs py-2.5 px-4 text-green-400 border-green-500/30"
         >
-          📱 WhatsApp Group
+          📱 WhatsApp
         </a>
 
         <a
-          href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
+          href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(customChallengeText)}`}
           target="_blank"
           rel="noopener noreferrer"
           className="btn-secondary flex items-center gap-1.5 text-xs py-2.5 px-4 text-sky-400 border-sky-500/30"
         >
-          𝕏 Post on X
+          𝕏 Post
         </a>
+      </div>
+    </div>
+  );
+}
 
-        {typeof navigator !== "undefined" && "share" in navigator && (
-          <button
-            onClick={nativeShare}
-            className="btn-secondary flex items-center gap-1.5 text-xs py-2.5 px-4"
-          >
-            <Share2 size={14} /> Share
-          </button>
-        )}
+// ─── 9. Mobile Sticky Action Bar ──────────────────────────────
+function MobileStickyBar({
+  shareCode,
+  roastScore,
+  onChallenge,
+}: {
+  shareCode: string;
+  roastScore: number;
+  onChallenge: () => void;
+}) {
+  return (
+    <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#07030e]/95 backdrop-blur-lg border-t border-white/10 px-4 py-2.5 flex items-center justify-between shadow-2xl">
+      <div className="flex items-center gap-1.5 text-xs">
+        <span className="text-red-400 font-bold">🔥 {roastScore}/100</span>
+        <span className="text-[#6b7280]">Damage</span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onChallenge}
+          className="btn-primary text-xs py-1.5 px-3 font-title font-bold flex items-center gap-1 shadow-md"
+        >
+          <Swords size={12} />
+          Challenge Friend
+        </button>
+        <Link
+          href="/friends"
+          className="btn-secondary text-xs py-1.5 px-2.5 text-purple-300 border-purple-500/30"
+        >
+          <Users size={12} />
+        </Link>
       </div>
     </div>
   );
@@ -568,6 +803,7 @@ export default function MoviePage() {
   const [movieData, setMovieData] = useState<MovieData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showIntroModal, setShowIntroModal] = useState(false);
+  const [scriptOpen, setScriptOpen] = useState(true);
 
   useEffect(() => {
     async function loadMovie() {
@@ -632,8 +868,8 @@ export default function MoviePage() {
   }
 
   return (
-    <div className="min-h-screen py-10 px-4 max-w-4xl mx-auto space-y-8">
-      {/* 1. Dramatic Step-by-Step Reveal Modal (shown on fresh generation) */}
+    <div className="min-h-screen py-10 px-4 max-w-5xl mx-auto space-y-8 pb-20 sm:pb-12">
+      {/* 1. Dramatic Step-by-Step Reveal Modal (shown once on generation) */}
       <AnimatePresence>
         {showIntroModal && (
           <DramaticRevealModal
@@ -643,7 +879,7 @@ export default function MoviePage() {
         )}
       </AnimatePresence>
 
-      {/* Top Navigation */}
+      {/* Top Nav */}
       <div className="flex items-center justify-between">
         <Link
           href="/"
@@ -660,110 +896,139 @@ export default function MoviePage() {
         </Link>
       </div>
 
-      {/* 2. Main Movie Poster Card */}
-      <MoviePoster data={movieData} />
+      {/* 2. Top Final Verdict Quick Summary */}
+      <FinalVerdictBanner profile={movieData.profile} />
 
-      {/* 3. The Signature Roast Receipt Card */}
-      <RoastReceiptCard profile={movieData.profile} />
+      {/* 3. Main Movie Poster Card & Download */}
+      <MoviePosterCard data={movieData} />
 
-      {/* 4. "Roast My Choices" (12 Questions Breakdown) */}
-      <RoastMyChoicesAccordion items={movieData.profile.roastMyChoices || []} />
-
-      {/* 5. "WHAT IF?" (Alternate Timelines) */}
-      <AlternateTimelinesCard timelines={movieData.profile.alternateTimelines || []} />
-
-      {/* 6. Movie Premiere Dossier */}
-      <MoviePremiereDetails profile={movieData.profile} story={movieData.story} />
-
-      {/* 7. The Cinematic Script & Climax */}
-      <div className="card-glass rounded-3xl p-6 sm:p-8 border border-white/8 space-y-6">
-        <div className="border-b border-white/10 pb-4">
-          <h3 className="font-title font-bold text-lg text-yellow-400 uppercase tracking-wide">
-            🎬 THE CINEMATIC SCRIPT
-          </h3>
-          <p className="text-[#9ca3af] text-xs mt-1">
-            Setting: <strong className="text-[#f0ece8]">{movieData.profile.kingdomName}</strong>
-          </p>
-        </div>
-
-        {/* Scene 1 */}
-        <div className="space-y-2">
-          <p className="text-[#d1c8b8] text-sm leading-relaxed whitespace-pre-line">
-            {movieData.story.characterIntroduction}
-          </p>
-        </div>
-
-        {/* Audience Reaction */}
-        {movieData.profile.audienceReactions?.[0] && (
-          <div className="bg-purple-950/20 border border-purple-500/20 rounded-xl p-3 text-xs text-purple-300 italic flex items-center gap-2">
-            <span>👤</span>
-            <strong>{movieData.profile.audienceReactions[0].user}:</strong> "{movieData.profile.audienceReactions[0].quote}"
-          </div>
-        )}
-
-        {/* Scene 2 */}
-        <div className="space-y-2 pt-2 border-t border-white/5">
-          <p className="text-[#d1c8b8] text-sm leading-relaxed whitespace-pre-line">
-            {movieData.story.currentChapter}
-          </p>
-        </div>
-
-        {/* Narrator Interruption */}
-        {movieData.profile.narratorInterruption && (
-          <div className="bg-red-950/30 border border-red-500/40 rounded-2xl p-4 text-xs text-red-200 space-y-1 my-4">
-            <div className="font-title font-black text-red-400 uppercase tracking-wider flex items-center gap-1.5">
-              🛑 NARRATOR INTERRUPTION
-            </div>
-            <p className="leading-relaxed italic">
-              {movieData.profile.narratorInterruption}
-            </p>
-          </div>
-        )}
-
-        {/* Quest & Encounters */}
-        <div className="space-y-2 pt-2 border-t border-white/5">
-          <p className="text-[#d1c8b8] text-sm leading-relaxed">
-            {movieData.story.quest}
-          </p>
-          <p className="text-[#d1c8b8] text-sm leading-relaxed">
-            {movieData.story.villain}
-          </p>
-          <p className="text-[#d1c8b8] text-sm leading-relaxed">
-            {movieData.story.companion}
-          </p>
-        </div>
-
-        {/* Plot Twist */}
-        <div className="twist-card p-5 rounded-2xl text-center my-4">
-          <div className="text-2xl mb-1">🌀</div>
-          <div className="font-title text-sm font-bold text-purple-300 uppercase tracking-widest mb-2">
-            PLOT TWIST
-          </div>
-          <p className="text-[#f0ece8] text-sm font-medium leading-relaxed">
-            {movieData.story.plotTwist}
-          </p>
-        </div>
-
-        {/* Final Battle & Ending */}
-        <div className="space-y-3 pt-2 border-t border-white/5">
-          <p className="text-[#d1c8b8] text-sm leading-relaxed whitespace-pre-line">
-            {movieData.story.finalBattle}
-          </p>
-          <p className="text-[#d1c8b8] text-sm leading-relaxed whitespace-pre-line">
-            {movieData.story.ending}
-          </p>
-        </div>
-      </div>
-
-      {/* 8. Share Challenge Suite */}
+      {/* 4. Top Quick Share / Challenge Suite */}
       <ShareSuite
         shareCode={movieData.shareCode}
         movieTitle={movieData.story.movieTitle}
         name={movieData.profile.name}
-        roastScore={movieData.profile.roastReceipt?.totalDamage ?? 91}
+        roastScore={movieData.profile.roastReceipt?.totalDamage ?? 97}
+        archetype={movieData.profile.roastPersonality?.title || movieData.profile.archetypeLabel}
+        survival={movieData.profile.survivalPercent}
       />
 
-      {/* 9. Group Movie Viral Callout */}
+      {/* 5. The Signature Roast Receipt Card */}
+      <div className="max-w-xl mx-auto">
+        <RoastReceiptCard profile={movieData.profile} />
+      </div>
+
+      {/* 6. "Roast My Choices" with Highlighted Worst Decision */}
+      <RoastMyChoicesSection
+        items={movieData.profile.roastMyChoices || []}
+        worst={movieData.profile.worstDecision}
+      />
+
+      {/* 7. "WHAT IF?" (Alternate Timelines) */}
+      <AlternateTimelinesCard timelines={movieData.profile.alternateTimelines || []} />
+
+      {/* 8. Movie Premiere Dossier (Balanced Strength + Problem) */}
+      <MoviePremiereDetails profile={movieData.profile} story={movieData.story} />
+
+      {/* 9. Cinematic Script with Collapsible Option */}
+      <div className="card-glass rounded-3xl p-6 sm:p-8 border border-white/8 space-y-6">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div>
+            <h3 className="font-title font-bold text-lg text-yellow-400 uppercase tracking-wide">
+              🎬 THE CINEMATIC SCRIPT
+            </h3>
+            <p className="text-[#9ca3af] text-xs mt-0.5">
+              Setting: <strong className="text-[#f0ece8]">{movieData.profile.kingdomName}</strong>
+            </p>
+          </div>
+          <button
+            onClick={() => setScriptOpen(!scriptOpen)}
+            className="text-xs text-yellow-400/80 hover:text-yellow-400 flex items-center gap-1 font-title font-bold"
+          >
+            {scriptOpen ? "Collapse Script ▲" : "Expand Script ▼"}
+          </button>
+        </div>
+
+        {scriptOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6"
+          >
+            {/* Scene 1 */}
+            <div className="space-y-2">
+              <div className="text-[10px] text-yellow-400 font-title uppercase tracking-widest font-bold">
+                SCENE 1: THE INTRODUCTION
+              </div>
+              <p className="text-[#d1c8b8] text-sm leading-relaxed whitespace-pre-line">
+                {movieData.story.characterIntroduction}
+              </p>
+            </div>
+
+            {/* Audience Reaction */}
+            {movieData.profile.audienceReactions?.[0] && (
+              <div className="bg-purple-950/20 border border-purple-500/20 rounded-xl p-3 text-xs text-purple-300 italic flex items-center gap-2">
+                <span>👤</span>
+                <strong>{movieData.profile.audienceReactions[0].user}:</strong> "{movieData.profile.audienceReactions[0].quote}"
+              </div>
+            )}
+
+            {/* Scene 2 */}
+            <div className="space-y-2 pt-2 border-t border-white/5">
+              <div className="text-[10px] text-yellow-400 font-title uppercase tracking-widest font-bold">
+                SCENE 2: THE QUESTIONABLE CRISIS
+              </div>
+              <p className="text-[#d1c8b8] text-sm leading-relaxed whitespace-pre-line">
+                {movieData.story.currentChapter}
+              </p>
+            </div>
+
+            {/* Director Interruption */}
+            {movieData.profile.narratorInterruption && (
+              <div className="bg-red-950/30 border border-red-500/40 rounded-2xl p-4 text-xs text-red-200 space-y-1 my-4">
+                <div className="font-title font-black text-red-400 uppercase tracking-wider flex items-center gap-1.5">
+                  🛑 DIRECTOR INTERRUPTION
+                </div>
+                <p className="leading-relaxed italic">
+                  {movieData.profile.narratorInterruption}
+                </p>
+              </div>
+            )}
+
+            {/* Quest & Encounters */}
+            <div className="space-y-2 pt-2 border-t border-white/5 text-sm text-[#d1c8b8] leading-relaxed">
+              <p>{movieData.story.quest}</p>
+              <p>{movieData.story.villain}</p>
+              <p>{movieData.story.companion}</p>
+            </div>
+
+            {/* Scene 3: The Plot Twist */}
+            <div className="twist-card p-5 rounded-2xl text-center my-4">
+              <div className="text-2xl mb-1">🌀</div>
+              <div className="font-title text-sm font-bold text-purple-300 uppercase tracking-widest mb-2">
+                PLOT TWIST
+              </div>
+              <p className="text-[#f0ece8] text-sm font-medium leading-relaxed">
+                {movieData.story.plotTwist}
+              </p>
+            </div>
+
+            {/* Climax & Ending */}
+            <div className="space-y-3 pt-2 border-t border-white/5">
+              <div className="text-[10px] text-yellow-400 font-title uppercase tracking-widest font-bold">
+                SCENE 4: THE CLIMAX & CREDITS
+              </div>
+              <p className="text-[#d1c8b8] text-sm leading-relaxed whitespace-pre-line">
+                {movieData.story.finalBattle}
+              </p>
+              <p className="text-[#d1c8b8] text-sm leading-relaxed whitespace-pre-line">
+                {movieData.story.ending}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </div>
+
+      {/* 10. Group Movie Callout */}
       <div className="card-glass rounded-2xl border border-purple-500/30 p-6 text-center bg-gradient-to-r from-purple-950/20 to-indigo-950/20">
         <div className="text-4xl mb-2">👥</div>
         <h3 className="font-title font-bold text-base sm:text-lg text-purple-300 uppercase tracking-wide mb-2">
@@ -774,12 +1039,21 @@ export default function MoviePage() {
         </p>
         <Link
           href="/friends"
-          className="btn-primary text-xs sm:text-sm py-2.5 px-6 inline-flex items-center gap-2"
+          className="btn-primary text-xs sm:text-sm py-2.5 px-6 inline-flex items-center gap-2 font-title font-bold"
         >
           <Users size={16} />
           CREATE GROUP MOVIE BATTLE
         </Link>
       </div>
+
+      {/* 11. Sticky Mobile Bottom Action Bar */}
+      <MobileStickyBar
+        shareCode={movieData.shareCode}
+        roastScore={movieData.profile.roastReceipt?.totalDamage ?? 97}
+        onChallenge={() => {
+          window.scrollTo({ top: 300, behavior: "smooth" });
+        }}
+      />
     </div>
   );
 }

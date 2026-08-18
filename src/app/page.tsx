@@ -70,7 +70,7 @@ const HOW_IT_WORKS = [
     icon: "🎲",
     title: "Answer 12 Ridiculous Questions",
     description:
-      "Every answer you click is secretly logged as evidence. Our unqualified AI analyzes your choices in real time.",
+      "Every answer you click is secretly logged as evidence. Our unqualified AI analyzes your choices.",
   },
   {
     step: "02",
@@ -262,8 +262,8 @@ export default function HomePage() {
       <section className="py-16 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="font-title text-2xl sm:text-3xl font-bold text-[#f0ece8] mb-2">
-              Real Stories. Fictional Movies.
+            <h2 className="font-title text-2xl sm:text-3xl font-bold text-[#f0ece8] mb-2 uppercase tracking-wide">
+              REAL CHOICES. FICTIONAL MOVIES.
             </h2>
             <p className="text-[#9ca3af] text-sm">
               Here is what happens when questionable decisions become blockbuster cinema.

@@ -1,3 +1,5 @@
+import { cleanLabel } from "@/lib/utils/sanitize";
+
 // Fallback story templates — used when AI is unavailable
 // These are funny, personalized, and always work
 
@@ -63,7 +65,14 @@ export const STORY_TEMPLATES: StoryTemplate[] = [
   {
     id: "fantasy_default",
     universeId: "fantasy",
-    template: (vars) => {
+    template: (rawVars) => {
+      const vars = {
+        ...rawVars,
+        weapon: cleanLabel(rawVars.weapon),
+        weakness: cleanLabel(rawVars.weakness),
+        situation: cleanLabel(rawVars.situation),
+        sacrifice: cleanLabel(rawVars.sacrifice),
+      };
       const realm = vars.kingdomName || "The Sovereign Realm of Aethelgard";
       return {
         movieTitle: generateTitle(vars),
