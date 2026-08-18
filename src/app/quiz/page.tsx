@@ -1,37 +1,33 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { QUESTIONS, type QuestionOption } from "@/data/questions";
+import { QUESTIONS } from "@/data/questions";
+import type { QuestionOption } from "@/data/questions";
 import { UNIVERSES, getRolesForUniverse } from "@/data/universes";
-import type { QuizAnswers } from "@/lib/validation";
 
 type AnswerValue = string | string[];
 
-// ─── Progress Bar ───────────────────────────────────────────
+// ─── Progress Bar ────────────────────────────────────────────
 function ProgressBar({ current, total }: { current: number; total: number }) {
   const pct = Math.round((current / total) * 100);
   return (
-    <div className="w-full max-w-xl mx-auto mb-8">
-      <div className="flex items-center justify-between mb-2 text-xs text-[#9ca3af] font-title uppercase tracking-widest">
-        <span>Question {current} of {total}</span>
-        <span>{pct}%</span>
+    <div className="fixed top-0 left-0 right-0 z-50">
+      <div className="h-1.5 w-full bg-white/5">
+        <motion.div
+          className="h-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-purple-500"
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        />
       </div>
-      <div className="progress-film h-2 w-full">
-        <div className="progress-film-fill" style={{ width: `${pct}%` }} />
-      </div>
-      {/* Film sprocket dots */}
-      <div className="flex gap-1 mt-1 justify-center">
-        {Array.from({ length: Math.min(total, 15) }).map((_, i) => (
-          <div
-            key={i}
-            className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-              i < current ? "bg-yellow-400" : "bg-white/10"
-            }`}
-          />
-        ))}
+      <div className="flex justify-between items-center px-4 py-2 text-xs text-[#9ca3af] bg-[#07030e]/80 backdrop-blur-sm">
+        <span className="font-title tracking-wider text-yellow-400/80">
+          Question {current} of {total}
+        </span>
+        <span>{pct}% Answered</span>
       </div>
     </div>
   );
@@ -52,13 +48,13 @@ function NameInput({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value.slice(0, 30))}
-        placeholder="Enter your name..."
+        placeholder="Enter your name... or alias"
         maxLength={30}
         className="w-full text-center text-2xl sm:text-3xl font-title text-[#f0ece8] bg-transparent border-0 border-b-2 border-yellow-400/40 pb-3 outline-none focus:border-yellow-400 transition-colors placeholder:text-[#4b5563] caret-yellow-400"
         autoFocus
       />
       <p className="text-center text-[#6b7280] text-xs mt-3">
-        {value.length}/30 characters
+        {value.length}/30 characters • Authorities are watching
       </p>
     </div>
   );
@@ -135,48 +131,43 @@ function RoleSelector({
   );
 }
 
-// ─── Multi Select Grid ──────────────────────────────────────
-function MultiSelectGrid({
+// ─── Single Select Grid with Subtitles ──────────────────────
+function SingleSelectGrid({
   options,
   selected,
-  onToggle,
+  onSelect,
 }: {
   options: QuestionOption[];
-  selected: string[];
-  onToggle: (id: string) => void;
+  selected: string;
+  onSelect: (id: string) => void;
 }) {
   return (
-    <div className="w-full max-w-xl mx-auto">
-      <p className="text-center text-[#9ca3af] text-xs mb-4 uppercase tracking-widest">
-        Select all that apply
-      </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {options.map((opt) => {
-          const isSelected = selected.includes(opt.id);
-          return (
-            <button
-              key={opt.id}
-              id={`option-${opt.id}`}
-              onClick={() => onToggle(opt.id)}
-              className={`option-card flex items-center gap-3 transition-all duration-200 ${
-                isSelected ? "selected" : ""
-              }`}
-            >
-              <span className="text-2xl flex-shrink-0">{opt.emoji}</span>
-              <span className="text-[#f0ece8] font-medium text-sm text-left flex-1">{opt.label}</span>
-              <span
-                className={`w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center text-xs transition-all duration-200 ${
-                  isSelected
-                    ? "bg-yellow-400 border-yellow-400 text-black"
-                    : "border-white/20"
-                }`}
-              >
-                {isSelected ? "✓" : ""}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl mx-auto">
+      {options.map((opt) => (
+        <button
+          key={opt.id}
+          id={`option-${opt.id}`}
+          onClick={() => onSelect(opt.id)}
+          className={`option-card flex items-start gap-3 text-left transition-all duration-200 ${
+            selected === opt.id ? "selected" : ""
+          }`}
+        >
+          <span className="text-2xl flex-shrink-0 mt-0.5">{opt.emoji}</span>
+          <div className="flex-1">
+            <span className="text-[#f0ece8] font-medium text-sm block">
+              {opt.label}
+            </span>
+            {opt.subtitle && (
+              <span className="text-[#9ca3af] text-xs italic block mt-0.5">
+                {opt.subtitle}
               </span>
-            </button>
-          );
-        })}
-      </div>
+            )}
+          </div>
+          {selected === opt.id && (
+            <span className="text-yellow-400 text-xs font-semibold">✓</span>
+          )}
+        </button>
+      ))}
     </div>
   );
 }
@@ -188,12 +179,24 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState<Partial<Record<string, AnswerValue>>>({});
   const [direction, setDirection] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [roastMessage, setRoastMessage] = useState<string | null>(null);
+
   // Keep a ref so goNext always reads latest answers
   const answersRef = useRef(answers);
   answersRef.current = answers;
 
   const currentQuestion = step > 0 ? QUESTIONS[step - 1] : null;
   const totalSteps = QUESTIONS.length;
+
+  // Idle timer to roast user if they take too long
+  useEffect(() => {
+    if (step === 0) return;
+    const idleTimer = setTimeout(() => {
+      setRoastMessage("Still thinking? It's okay. The kingdom has been waiting for 14 minutes. 😂");
+    }, 12000);
+
+    return () => clearTimeout(idleTimer);
+  }, [step]);
 
   // Load saved progress from sessionStorage
   useEffect(() => {
@@ -221,23 +224,9 @@ export default function QuizPage() {
 
   const handleAnswer = useCallback(
     (questionId: string, value: AnswerValue) => {
+      setRoastMessage(null);
       setAnswers((prev) => {
         const next = { ...prev, [questionId]: value };
-        answersRef.current = next;
-        return next;
-      });
-    },
-    []
-  );
-
-  const handleMultiToggle = useCallback(
-    (questionId: string, optionId: string) => {
-      setAnswers((prev) => {
-        const current = (prev[questionId] as string[] | undefined) ?? [];
-        const updated = current.includes(optionId)
-          ? current.filter((id) => id !== optionId)
-          : [...current, optionId];
-        const next = { ...prev, [questionId]: updated };
         answersRef.current = next;
         return next;
       });
@@ -249,12 +238,6 @@ export default function QuizPage() {
     if (!currentQuestion) return "";
     const val = answers[currentQuestion.id];
     return (typeof val === "string" ? val : "") ?? "";
-  };
-
-  const getCurrentMultiAnswer = (): string[] => {
-    if (!currentQuestion) return [];
-    const val = answers[currentQuestion.id];
-    return Array.isArray(val) ? val : [];
   };
 
   const canProceed = () => {
@@ -272,12 +255,11 @@ export default function QuizPage() {
 
   const goNext = async () => {
     if (!canProceed()) return;
+    setRoastMessage(null);
 
     if (step === totalSteps) {
-      // Use ref to get latest answers (avoids stale closure issue)
       const latestAnswers = answersRef.current;
       setIsSubmitting(true);
-      // Flatten multi-choice arrays to comma-joined strings for the API
       const flatAnswers: Record<string, string> = {};
       for (const [key, val] of Object.entries(latestAnswers)) {
         if (Array.isArray(val)) {
@@ -300,6 +282,7 @@ export default function QuizPage() {
       router.push("/");
       return;
     }
+    setRoastMessage("Going back? Interesting. The timeline has been damaged. 🌀");
     setDirection(-1);
     setStep((s) => s - 1);
   };
@@ -322,7 +305,7 @@ export default function QuizPage() {
       <button
         onClick={goBack}
         id="quiz-back"
-        className="fixed top-6 left-6 flex items-center gap-2 text-[#9ca3af] hover:text-yellow-400 transition-colors text-sm"
+        className="fixed top-6 left-6 flex items-center gap-2 text-[#9ca3af] hover:text-yellow-400 transition-colors text-sm z-40"
       >
         <ArrowLeft size={16} />
         {step === 0 ? "Home" : "Back"}
@@ -333,6 +316,20 @@ export default function QuizPage() {
         <ProgressBar current={step} total={totalSteps} />
       )}
 
+      {/* Roasting Toast */}
+      <AnimatePresence>
+        {roastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-14 z-50 bg-amber-950/90 border border-amber-500/40 text-amber-200 text-xs px-4 py-2 rounded-full shadow-lg max-w-sm text-center"
+          >
+            {roastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Start screen */}
       {step === 0 && (
         <motion.div
@@ -341,23 +338,26 @@ export default function QuizPage() {
           className="text-center max-w-lg"
         >
           <div className="text-6xl mb-6">🎬</div>
-          <h1 className="font-title text-4xl sm:text-5xl font-black text-gold-gradient mb-4">
-            YOUR MOVIE AWAITS
+          <h1 className="font-title text-3xl sm:text-5xl font-black text-gold-gradient mb-4">
+            YOUR LIFE: THE MOVIE
           </h1>
-          <p className="text-[#9ca3af] text-lg mb-8 leading-relaxed">
-            15 questions. 1 personalized cinematic story. And probably at least one
-            plot twist you didn't see coming.
+          <p className="text-[#d1c8b8] text-base sm:text-lg mb-8 leading-relaxed">
+            We asked you 12 questions. We regret asking 11 of them.
+            <br />
+            <span className="text-[#9ca3af] text-sm">
+              “Answer honestly. Our completely unqualified AI will turn your life into a movie.”
+            </span>
           </p>
           <button
             id="quiz-start"
             onClick={() => { setDirection(1); setStep(1); }}
             className="btn-primary text-lg px-10 py-4 flex items-center gap-2 mx-auto"
           >
-            LET'S BEGIN
+            START THE QUIZ 🎬
             <ArrowRight size={18} />
           </button>
           <p className="text-[#6b7280] text-xs mt-4">
-            Entertainment only · Purely fictional results
+            Entertainment only · 100% Unqualified comedy engine
           </p>
         </motion.div>
       )}
@@ -378,76 +378,77 @@ export default function QuizPage() {
             >
               {/* Question header */}
               <div className="text-center mb-8 max-w-lg">
-                <h2 className="font-title text-2xl sm:text-3xl font-bold text-[#f0ece8] mb-2">
+                <div className="inline-block text-xs font-title text-yellow-400 uppercase tracking-widest bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20 mb-3">
+                  Step {step} of {totalSteps}
+                </div>
+                <h2 className="font-title text-2xl sm:text-3xl font-bold text-[#f0ece8] leading-snug mb-2">
                   {currentQuestion.title}
                 </h2>
                 {currentQuestion.subtitle && (
-                  <p className="text-[#9ca3af] text-base">{currentQuestion.subtitle}</p>
+                  <p className="text-[#9ca3af] text-sm leading-relaxed">
+                    {currentQuestion.subtitle}
+                  </p>
                 )}
               </div>
 
-              {/* Input type */}
-              {currentQuestion.type === "name" && (
-                <NameInput
-                  value={typeof answers.name === "string" ? answers.name : ""}
-                  onChange={(v) => handleAnswer("name", v)}
-                />
-              )}
-
-              {currentQuestion.type === "universe" && (
-                <UniverseSelector
-                  selected={typeof answers.universe === "string" ? answers.universe : ""}
-                  onSelect={(v) => handleAnswer("universe", v)}
-                />
-              )}
-
-              {currentQuestion.type === "role" && (
-                <RoleSelector
-                  universeId={typeof answers.universe === "string" ? answers.universe : "fantasy"}
-                  selected={typeof answers.role === "string" ? answers.role : ""}
-                  onSelect={(v) => handleAnswer("role", v)}
-                />
-              )}
-
-              {(currentQuestion.type === "single_choice" || currentQuestion.type === "multi_choice") &&
-                currentQuestion.options && (
-                  <MultiSelectGrid
-                    options={currentQuestion.options}
-                    selected={getCurrentMultiAnswer()}
-                    onToggle={(v) => handleMultiToggle(currentQuestion.id, v)}
+              {/* Question inputs */}
+              <div className="w-full mb-8">
+                {currentQuestion.type === "name" && (
+                  <NameInput
+                    value={getCurrentAnswer()}
+                    onChange={(v) => handleAnswer("name", v)}
                   />
                 )}
+
+                {currentQuestion.type === "universe" && (
+                  <UniverseSelector
+                    selected={getCurrentAnswer()}
+                    onSelect={(id) => handleAnswer("universe", id)}
+                  />
+                )}
+
+                {currentQuestion.type === "role" && (
+                  <RoleSelector
+                    universeId={(answers.universe as string) ?? "fantasy"}
+                    selected={getCurrentAnswer()}
+                    onSelect={(id) => handleAnswer("role", id)}
+                  />
+                )}
+
+                {currentQuestion.type === "single_choice" && currentQuestion.options && (
+                  <SingleSelectGrid
+                    options={currentQuestion.options}
+                    selected={getCurrentAnswer()}
+                    onSelect={(id) => handleAnswer(currentQuestion.id, id)}
+                  />
+                )}
+              </div>
+
+              {/* Next button */}
+              <button
+                id="quiz-next"
+                onClick={goNext}
+                disabled={!canProceed() || isSubmitting}
+                className="btn-primary text-base px-8 py-3.5 flex items-center gap-2 group disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {step === totalSteps ? (
+                  isSubmitting ? (
+                    "PRODUCING MOVIE..."
+                  ) : (
+                    "🎬 GENERATE MY MOVIE"
+                  )
+                ) : (
+                  <>
+                    NEXT
+                    <ArrowRight
+                      size={16}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
+                  </>
+                )}
+              </button>
             </motion.div>
           </AnimatePresence>
-
-          {/* Navigation */}
-          <div className="flex items-center gap-4 mt-10">
-            <button
-              onClick={goBack}
-              id="quiz-back-btn"
-              className="btn-secondary flex items-center gap-2"
-            >
-              <ArrowLeft size={16} />
-              Back
-            </button>
-            <button
-              onClick={goNext}
-              id="quiz-next-btn"
-              disabled={!canProceed() || isSubmitting}
-              className={`btn-primary flex items-center gap-2 transition-opacity ${
-                canProceed() ? "opacity-100" : "opacity-40 cursor-not-allowed"
-              }`}
-            >
-              {step === totalSteps ? (
-                isSubmitting ? "Creating..." : "CREATE MY MOVIE 🎬"
-              ) : (
-                <>
-                  Continue
-                  <ArrowRight size={16} />
-                </>
-              )}
-            </button>
-          </div>
         </div>
       )}
     </div>

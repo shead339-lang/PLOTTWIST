@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -18,6 +18,11 @@ import {
   RefreshCw,
   Skull,
   Dices,
+  ShoppingBag,
+  Megaphone,
+  Radio,
+  AlertTriangle,
+  HeartCrack,
 } from "lucide-react";
 import type { MovieProfile } from "@/lib/scoring";
 import type { StoryResult } from "@/lib/validation";
@@ -46,7 +51,7 @@ function DramaticRevealModal({
       icon: "💀",
       title: `${data.profile.name.toUpperCase()}...`,
       subtitle: "We analyzed your answers.",
-      body: "We have some concerns. 💀",
+      body: "We have some serious concerns. 💀",
       btnText: "WHAT DID YOU FIND? ⏳",
     },
     {
@@ -211,77 +216,335 @@ function MoviePoster({ data }: { data: MovieData }) {
   );
 }
 
-// ─── 3. Box Office Projection & Rotten Tomatoes Card ─────────
-function BoxOfficeCard({ profile }: { profile: MovieProfile }) {
-  const box = profile.boxOffice || {
-    audienceRating: "⭐⭐⭐⭐⭐ (4.9/5)",
-    chaosRating: "🔥🔥🔥🔥🔥 (11/10)",
-    survivalProbability: "☠️ 31%",
-    criticalReview:
-      '"Nobody knows what actually happened, but somehow it was the most entertaining spectacle of the decade."',
-    openingWeekend: "₹847 Crore",
-    productionBudget: "₹12",
-    profit: "Absolutely Ridiculous",
+// ─── 3. Production Budget & Financial Report ─────────────────
+function ProductionBudgetCard({ profile }: { profile: MovieProfile }) {
+  const rep = profile.productionReport || {
+    budget: "₹12.00",
+    spent: "₹11.73",
+    remaining: "₹0.27",
+    specialEffects: "Someone drew a dragon on MS Paint",
+    actorSalary: "One samosa & tap water",
+    dragonCgi: "We asked the dragon to act for free",
+    openingWeekend: "₹847 Crore (Nobody understands how)",
   };
 
   return (
     <div className="card-glass rounded-2xl border border-yellow-400/20 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-title font-bold text-sm uppercase tracking-widest text-yellow-400 flex items-center gap-2">
-          🍿 BOX OFFICE & CRITICAL RECEPTION
+          🎥 OFFICIAL PRODUCTION REPORT
         </h3>
         <span className="text-xs bg-yellow-400/10 text-yellow-400 px-2 py-0.5 rounded border border-yellow-400/20">
-          Certified Chaotic
+          Budget: {rep.budget}
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 text-center mb-5">
-        <div className="bg-black/30 p-3 rounded-xl border border-white/5">
-          <div className="text-[10px] text-[#9ca3af] uppercase tracking-wider mb-1">
-            Audience Score
-          </div>
-          <div className="font-title font-bold text-sm text-yellow-400">
-            {box.audienceRating}
-          </div>
+      <div className="grid grid-cols-3 gap-3 text-center mb-4">
+        <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
+          <div className="text-[10px] text-[#9ca3af] uppercase">Total Budget</div>
+          <div className="font-title font-bold text-sm text-yellow-400">{rep.budget}</div>
         </div>
-        <div className="bg-black/30 p-3 rounded-xl border border-white/5">
-          <div className="text-[10px] text-[#9ca3af] uppercase tracking-wider mb-1">
-            Chaos Level
-          </div>
-          <div className="font-title font-bold text-sm text-red-400">
-            {box.chaosRating}
-          </div>
+        <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
+          <div className="text-[10px] text-[#9ca3af] uppercase">Actual Spent</div>
+          <div className="font-title font-bold text-sm text-red-400">{rep.spent}</div>
         </div>
-        <div className="bg-black/30 p-3 rounded-xl border border-white/5">
-          <div className="text-[10px] text-[#9ca3af] uppercase tracking-wider mb-1">
-            Survival Odds
-          </div>
-          <div className="font-title font-bold text-sm text-purple-400">
-            {box.survivalProbability}
-          </div>
+        <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
+          <div className="text-[10px] text-[#9ca3af] uppercase">Remaining</div>
+          <div className="font-title font-bold text-sm text-green-400">{rep.remaining}</div>
         </div>
       </div>
 
-      <div className="bg-purple-950/20 border border-purple-500/20 rounded-xl p-3.5 mb-4 text-xs text-[#d1c8b8] italic">
-        {box.criticalReview}
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 text-[11px] text-[#9ca3af] border-t border-white/8 pt-3">
-        <div>
-          Opening: <strong className="text-[#f0ece8]">{box.openingWeekend}</strong>
-        </div>
-        <div>
-          Budget: <strong className="text-[#f0ece8]">{box.productionBudget}</strong>
-        </div>
-        <div>
-          Profit: <strong className="text-green-400">{box.profit}</strong>
+      <div className="space-y-2 text-xs text-[#9ca3af] bg-black/40 p-3.5 rounded-xl border border-white/5">
+        <div>🎨 <strong>Special Effects:</strong> <span className="text-[#f0ece8]">{rep.specialEffects}</span></div>
+        <div>🥪 <strong>Actor Salary:</strong> <span className="text-[#f0ece8]">{rep.actorSalary}</span></div>
+        <div>🐉 <strong>Dragon CGI:</strong> <span className="text-[#f0ece8]">{rep.dragonCgi}</span></div>
+        <div className="pt-2 border-t border-white/5 text-green-400 font-bold">
+          💰 Opening Weekend: {rep.openingWeekend}
         </div>
       </div>
     </div>
   );
 }
 
-// ─── 4. Completely Unreliable Stats ──────────────────────────
+// ─── 4. Confused Critics Reviews ─────────────────────────────
+function CriticsReviewsCard({ profile }: { profile: MovieProfile }) {
+  const reviews = profile.criticsReviews || [];
+
+  return (
+    <div className="card-glass rounded-2xl border border-purple-500/20 p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-title font-bold text-sm uppercase tracking-widest text-purple-300 flex items-center gap-2">
+          🍿 CRITICS ARE DEEPLY CONFUSED
+        </h3>
+        <span className="text-[10px] text-[#9ca3af]">Certified Entertaining</span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {reviews.map((rev) => (
+          <div key={rev.publication} className="bg-black/30 p-3.5 rounded-xl border border-white/5 text-xs">
+            <div className="flex justify-between items-center mb-1">
+              <span className="font-title font-bold text-yellow-400">{rev.publication}</span>
+              <span>{rev.stars}</span>
+            </div>
+            <p className="text-[#d1c8b8] italic mt-1 leading-relaxed">{rev.review}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── 5. Movie Survival Board ─────────────────────────────────
+function MovieSurvivalBoard({ profile }: { profile: MovieProfile }) {
+  const board = profile.survivalBoard || [];
+
+  return (
+    <div className="card-glass rounded-2xl border border-red-500/20 p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-title font-bold text-sm uppercase tracking-widest text-red-400 flex items-center gap-2">
+          🎬 MOVIE SURVIVAL BOARD (WHO DIES FIRST?)
+        </h3>
+        <span className="text-[10px] text-[#6b7280]">Fictional Odds</span>
+      </div>
+
+      <div className="space-y-2">
+        {board.map((item) => (
+          <div
+            key={item.entity}
+            className="flex items-center justify-between bg-black/30 p-2.5 rounded-xl border border-white/5 text-xs"
+          >
+            <div>
+              <span className="text-[#f0ece8] font-bold">{item.entity}</span>
+              {item.note && (
+                <span className="text-[#6b7280] text-[11px] block sm:inline sm:ml-2">
+                  • {item.note}
+                </span>
+              )}
+            </div>
+            <span className={`font-title font-bold text-sm ${item.color || "text-yellow-400"}`}>
+              {item.rate}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── 6. The AI Judges Your Answers ───────────────────────────
+function AIJudgementCard({ profile }: { profile: MovieProfile }) {
+  const judge = profile.aiJudgement || {
+    answerQuality: "72%",
+    commonSense: "14%",
+    confidence: "96%",
+    planning: "Not detected",
+    riskOfMakingWorse: "89%",
+    recommendation: "“Good luck. You are going to need it.”",
+  };
+
+  return (
+    <div className="card-glass rounded-2xl border border-cyan-500/20 p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-title font-bold text-sm uppercase tracking-widest text-cyan-300 flex items-center gap-2">
+          🤖 THE AI HAS REVIEWED YOUR ANSWERS
+        </h3>
+        <span className="text-xs bg-cyan-500/10 text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/20">
+          Unfiltered Audit
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs mb-4">
+        <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
+          <div className="text-[10px] text-[#6b7280]">Answer Quality</div>
+          <div className="font-title font-bold text-yellow-400">{judge.answerQuality}</div>
+        </div>
+        <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
+          <div className="text-[10px] text-[#6b7280]">Common Sense</div>
+          <div className="font-title font-bold text-red-400">{judge.commonSense}</div>
+        </div>
+        <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
+          <div className="text-[10px] text-[#6b7280]">Confidence Level</div>
+          <div className="font-title font-bold text-green-400">{judge.confidence}</div>
+        </div>
+        <div className="bg-black/30 p-2.5 rounded-xl border border-white/5">
+          <div className="text-[10px] text-[#6b7280]">Evidence of Planning</div>
+          <div className="font-title font-bold text-gray-400">{judge.planning}</div>
+        </div>
+        <div className="bg-black/30 p-2.5 rounded-xl border border-white/5 col-span-2 sm:col-span-2">
+          <div className="text-[10px] text-[#6b7280]">Likelihood of Making It Worse</div>
+          <div className="font-title font-bold text-amber-400">{judge.riskOfMakingWorse}</div>
+        </div>
+      </div>
+
+      <div className="bg-cyan-950/20 border border-cyan-500/20 rounded-xl p-3 text-xs text-[#d1c8b8] text-center">
+        Final Recommendation: <strong className="text-yellow-400">{judge.recommendation}</strong>
+      </div>
+    </div>
+  );
+}
+
+// ─── 7. Breaking News & Kingdom Alert ────────────────────────
+function FakeNewsCard({ profile }: { profile: MovieProfile }) {
+  const news = profile.fakeNews;
+  const alertItem = profile.kingdomAlert;
+
+  return (
+    <div className="space-y-4">
+      {news && (
+        <div className="card-glass rounded-2xl border border-white/10 p-6">
+          <div className="flex items-center gap-2 text-xs text-yellow-400 font-title font-bold mb-2 uppercase tracking-wider">
+            <Radio size={14} className="text-red-400 animate-pulse" />
+            📰 BREAKING NEWS
+          </div>
+          <h4 className="font-title font-bold text-base text-[#f0ece8] mb-1">
+            {news.headline}
+          </h4>
+          <div className="text-[10px] text-[#6b7280] mb-3">{news.dateline}</div>
+          <p className="text-xs text-[#d1c8b8] leading-relaxed">{news.body}</p>
+        </div>
+      )}
+
+      {alertItem && (
+        <div className="bg-red-950/20 border border-red-500/30 rounded-2xl p-5 text-xs text-[#f0ece8]">
+          <div className="text-red-400 font-title font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <AlertTriangle size={14} />
+            {alertItem.title}
+          </div>
+          <p className="mb-2">{alertItem.alertMessage}</p>
+          <div className="text-[#9ca3af] italic text-[11px] border-t border-red-500/10 pt-2">
+            Advisory: {alertItem.advisory}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── 8. Fake Advertisement ───────────────────────────────────
+function FakeAdCard({ profile }: { profile: MovieProfile }) {
+  const ad = profile.fakeAd || {
+    sponsor: "PROCRASTINATOR™",
+    tagline: "Why solve today's problems today? Tomorrow is available.",
+    disclaimer: "Procrastinator™ does not guarantee that tomorrow will be any better.",
+  };
+
+  return (
+    <div className="border border-dashed border-yellow-400/40 bg-yellow-400/5 rounded-2xl p-4 text-center text-xs">
+      <div className="text-[10px] text-[#9ca3af] uppercase tracking-widest mb-1">
+        📺 THIS MOVIE IS BROUGHT TO YOU BY:
+      </div>
+      <div className="font-title font-black text-sm text-yellow-400 tracking-wide mb-1">
+        {ad.sponsor}
+      </div>
+      <p className="text-[#f0ece8] italic mb-1">"{ad.tagline}"</p>
+      <div className="text-[10px] text-[#6b7280]">{ad.disclaimer}</div>
+    </div>
+  );
+}
+
+// ─── 9. Fake Movie Merchandise ───────────────────────────────
+function MerchandiseCard({ profile }: { profile: MovieProfile }) {
+  const items = profile.merchandise || [];
+
+  return (
+    <div className="card-glass rounded-2xl border border-white/8 p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-title font-bold text-sm uppercase tracking-widest text-yellow-400 flex items-center gap-2">
+          <ShoppingBag size={16} />
+          🛍️ OFFICIAL MOVIE MERCHANDISE
+        </h3>
+        <span className="text-[10px] text-[#6b7280]">Limited Stock</span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {items.map((item) => (
+          <div
+            key={item.name}
+            className="flex items-start justify-between bg-black/30 p-3 rounded-xl border border-white/5 text-xs"
+          >
+            <div className="flex items-start gap-2.5">
+              <span className="text-2xl">{item.emoji}</span>
+              <div>
+                <div className="font-title font-bold text-[#f0ece8]">{item.name}</div>
+                <div className="text-[#9ca3af] text-[11px] mt-0.5">{item.description}</div>
+              </div>
+            </div>
+            <div className="text-right flex-shrink-0 ml-2">
+              <div className="font-bold text-yellow-400">{item.price}</div>
+              <span
+                className={`text-[10px] ${
+                  item.inStock ? "text-green-400" : "text-red-400 font-bold"
+                }`}
+              >
+                {item.inStock ? "Add to Cart" : "OUT OF STOCK"}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── 10. The Ultimate Comedy Score ───────────────────────────
+function UltimateComedyScoreCard({ profile }: { profile: MovieProfile }) {
+  const score = profile.comedyScore || {
+    comedy: 97,
+    chaos: 84,
+    commonSense: 6,
+    plotArmor: 100,
+    decisionQuality: 13,
+    survival: 85,
+    mainCharacterEnergy: 94,
+    sequelChance: 99,
+    verdict: "“Absolutely unnecessary. Would watch again.”",
+  };
+
+  const metrics = [
+    { label: "Comedy Rating", val: score.comedy, color: "from-yellow-500 to-amber-400" },
+    { label: "Chaos Level", val: score.chaos, color: "from-red-500 to-amber-500" },
+    { label: "Common Sense", val: score.commonSense, color: "from-gray-500 to-gray-400" },
+    { label: "Plot Armor", val: score.plotArmor, color: "from-purple-500 to-indigo-400" },
+    { label: "Decision Quality", val: score.decisionQuality, color: "from-red-400 to-orange-400" },
+    { label: "Main Character Energy", val: score.mainCharacterEnergy, color: "from-yellow-400 to-lime-400" },
+    { label: "Probability of Causing Sequel", val: score.sequelChance, color: "from-cyan-400 to-blue-500" },
+  ];
+
+  return (
+    <div className="card-glass rounded-2xl border border-yellow-400/30 p-6 text-center">
+      <div className="text-3xl mb-1">🤡</div>
+      <h3 className="font-title font-bold text-base sm:text-lg uppercase tracking-wide text-yellow-400 mb-1">
+        YOUR OFFICIAL LIFE MOVIE SCORE
+      </h3>
+      <p className="text-[#9ca3af] text-xs mb-6">Audited by our completely unqualified AI review board.</p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-left mb-6">
+        {metrics.map((m) => (
+          <div key={m.label} className="bg-black/30 p-3 rounded-xl border border-white/5">
+            <div className="flex justify-between text-xs mb-1.5">
+              <span className="text-[#d1c8b8]">{m.label}</span>
+              <span className="font-title font-bold text-yellow-400">{m.val}%</span>
+            </div>
+            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+              <div className={`h-full bg-gradient-to-r ${m.color} rounded-full`} style={{ width: `${m.val}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-yellow-400/10 border border-yellow-400/30 rounded-xl p-4">
+        <div className="text-[10px] text-yellow-400 font-title uppercase tracking-widest mb-1">
+          OFFICIAL VERDICT
+        </div>
+        <div className="font-title font-bold text-base sm:text-lg text-[#f0ece8]">
+          {score.verdict}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── 11. Unreliable Stats ────────────────────────────────────
 function UnreliableStats({ profile }: { profile: MovieProfile }) {
   const stats = profile.unreliableStats || [];
 
@@ -318,81 +581,12 @@ function UnreliableStats({ profile }: { profile: MovieProfile }) {
   );
 }
 
-// ─── 5. Current Life Problems as Movie Mechanics ─────────────
-function LifeMechanicsCard({ profile }: { profile: MovieProfile }) {
-  const mech = profile.lifeMechanics || {
-    status: profile.situation.toUpperCase(),
-    difficulty: "☠️☠️☠️☠️☠️",
-    mission: "Somehow get your life under control before Tuesday",
-    progressPercent: 38,
-    boss: "THE DEADLINE",
-    specialAbility: '"I\'ll start tomorrow."',
-    abilityEffectiveness: "2%",
-  };
-
-  return (
-    <div className="card-glass rounded-2xl border border-purple-500/20 p-6 relative overflow-hidden">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-title font-bold text-sm uppercase tracking-widest text-purple-300 flex items-center gap-2">
-          🌪️ CURRENT LIFE STATUS AS MOVIE MECHANICS
-        </h3>
-        <span className="text-xs bg-purple-500/10 text-purple-300 px-2 py-0.5 rounded border border-purple-500/20">
-          Difficulty: {mech.difficulty}
-        </span>
-      </div>
-
-      <div className="bg-black/40 p-4 rounded-xl border border-white/5 space-y-3 text-xs">
-        <div>
-          <div className="text-[#6b7280] uppercase tracking-wider text-[10px] mb-0.5">
-            Current Status
-          </div>
-          <div className="text-yellow-400 font-title font-bold text-sm">
-            {mech.status}
-          </div>
-        </div>
-
-        <div>
-          <div className="text-[#6b7280] uppercase tracking-wider text-[10px] mb-0.5">
-            Current Mission
-          </div>
-          <div className="text-[#f0ece8] leading-relaxed">{mech.mission}</div>
-        </div>
-
-        <div>
-          <div className="flex justify-between text-[11px] text-[#9ca3af] mb-1">
-            <span>Mission Progress</span>
-            <span>{mech.progressPercent}%</span>
-          </div>
-          <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-purple-500 to-indigo-400 h-full rounded-full"
-              style={{ width: `${mech.progressPercent}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="pt-2 border-t border-white/5 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-          <div>
-            <span className="text-[#6b7280]">Boss Encounter: </span>
-            <span className="text-red-400 font-bold">{mech.boss}</span>
-          </div>
-          <div>
-            <span className="text-[#6b7280]">Special Ability: </span>
-            <span className="text-yellow-400">{mech.specialAbility} </span>
-            <span className="text-gray-400">({mech.abilityEffectiveness} effective)</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── 6. Character Inventory ──────────────────────────────────
+// ─── 12. Character Inventory ─────────────────────────────────
 function InventoryCard({ profile }: { profile: MovieProfile }) {
   const items = profile.inventory || [];
   const secret = profile.secretItem || {
     name: "The Chair of Destiny",
-    description: "Nobody knows why you have it. Somehow it keeps saving you.",
+    description: "Nobody knows why you have it. Makes villains sit down.",
     emoji: "🪑",
   };
 
@@ -400,7 +594,7 @@ function InventoryCard({ profile }: { profile: MovieProfile }) {
     <div className="card-glass rounded-2xl border border-white/8 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-title font-bold text-sm uppercase tracking-widest text-yellow-400 flex items-center gap-2">
-          🎒 CHARACTER INVENTORY
+          🎒 CHARACTER INVENTORY & RELICS
         </h3>
         <span className="text-[10px] text-[#9ca3af]">RPG Power Grid</span>
       </div>
@@ -436,34 +630,7 @@ function InventoryCard({ profile }: { profile: MovieProfile }) {
   );
 }
 
-// ─── 7. Totally Scientific Future (Prophecies) ───────────────
-function ScientificFutureCard({ profile }: { profile: MovieProfile }) {
-  const events = profile.scientificFuture || [];
-
-  return (
-    <div className="card-glass rounded-2xl border border-cyan-500/20 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-title font-bold text-sm uppercase tracking-widest text-cyan-300 flex items-center gap-2">
-          🔮 YOUR TOTALLY SCIENTIFIC FUTURE
-        </h3>
-        <span className="text-[10px] text-[#6b7280]">100% Unreliable</span>
-      </div>
-
-      <div className="space-y-3">
-        {events.map((ev) => (
-          <div key={ev.timeframe} className="bg-black/30 p-3 rounded-xl border border-white/5 text-xs">
-            <div className="text-cyan-400 font-title font-bold uppercase tracking-wider mb-1">
-              {ev.timeframe}
-            </div>
-            <div className="text-[#d1c8b8] leading-relaxed">{ev.prediction}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── 8. Roast Me Interactive Generator ───────────────────────
+// ─── 13. Roast Me Interactive Generator ──────────────────────
 function RoastCard({ profile }: { profile: MovieProfile }) {
   const [showRoast, setShowRoast] = useState(false);
   const [harder, setHarder] = useState(false);
@@ -519,42 +686,7 @@ function RoastCard({ profile }: { profile: MovieProfile }) {
   );
 }
 
-// ─── 9. Achievements Unlocked ────────────────────────────────
-function AchievementsCard({ profile }: { profile: MovieProfile }) {
-  const achievements = profile.achievements || [];
-
-  return (
-    <div className="card-glass rounded-2xl border border-white/8 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-title font-bold text-sm uppercase tracking-widest text-yellow-400 flex items-center gap-2">
-          🏆 ACHIEVEMENTS UNLOCKED
-        </h3>
-        <span className="text-[10px] text-[#9ca3af]">Screenshot Ready</span>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {achievements.map((ach) => (
-          <div
-            key={ach.id}
-            className="flex items-start gap-3 bg-black/30 p-3 rounded-xl border border-white/5"
-          >
-            <span className="text-2xl flex-shrink-0">{ach.icon}</span>
-            <div>
-              <div className="text-yellow-400 font-title font-bold text-xs">
-                {ach.title}
-              </div>
-              <div className="text-[#9ca3af] text-[11px] leading-relaxed mt-0.5">
-                {ach.description}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── 10. Random Event Clicker ────────────────────────────────
+// ─── 14. Random Event Clicker ────────────────────────────────
 function RandomEventCard({ profile }: { profile: MovieProfile }) {
   const events = profile.randomEvents || [];
   const [index, setIndex] = useState<number | null>(null);
@@ -597,7 +729,7 @@ function RandomEventCard({ profile }: { profile: MovieProfile }) {
   );
 }
 
-// ─── 11. Interactive Post-Credit Scene ───────────────────────
+// ─── 15. Interactive Post-Credit Scene ───────────────────────
 function PostCreditScene({ postCredit }: { postCredit: string }) {
   const [revealed, setRevealed] = useState(false);
 
@@ -643,229 +775,7 @@ function PostCreditScene({ postCredit }: { postCredit: string }) {
   );
 }
 
-// ─── 12. Interactive Decision / Plot Continuation ───────────
-const CHOICES = [
-  { id: "fight", emoji: "⚔️", label: "Fight Immediately", desc: "Charge directly into battle." },
-  { id: "accept", emoji: "⚡", label: "Accept the Power", desc: "Take what's offered. Deal with it later." },
-  { id: "save_friend", emoji: "🤝", label: "Save Your Companion", desc: "Risk everything for the one who matters." },
-  { id: "trick", emoji: "😏", label: "Trick the Villain", desc: "Too clever for a fair fight. Probably." },
-];
-
-function InteractiveDecision({
-  shareCode,
-  profile,
-}: {
-  shareCode: string;
-  profile: MovieProfile;
-  story: StoryResult;
-}) {
-  const [selected, setSelected] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [continuation, setContinuation] = useState<{
-    continuationTitle: string;
-    continuation: string;
-    cliffhanger: string;
-  } | null>(null);
-
-  const handleChoice = async (choiceId: string) => {
-    if (loading) return;
-    setSelected(choiceId);
-    setLoading(true);
-    try {
-      const res = await fetch("/api/continue-story", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shareCode, choice: choiceId }),
-      });
-      const data = await res.json();
-      if (data.success) setContinuation(data.continuation);
-    } catch {
-      setContinuation({
-        continuationTitle: "The Choice That Changed Everything",
-        continuation: `${profile.name} made their decision. The ${profile.villainLabel} did not see it coming. Neither did ${profile.companionLabel}. The story continued in a direction nobody had predicted — which, considering everything that had happened so far, was fitting.`,
-        cliffhanger: "The dust settled. The question remained: was it really over?",
-      });
-    }
-    setLoading(false);
-  };
-
-  return (
-    <div className="card-glass rounded-2xl border border-yellow-400/20 overflow-hidden">
-      <div className="bg-gradient-to-r from-yellow-900/30 to-amber-900/20 p-5">
-        <div className="text-center">
-          <div className="text-3xl mb-2">⚡</div>
-          <h3 className="font-title text-base sm:text-lg font-bold text-yellow-400 uppercase tracking-wide">
-            THE VILLAIN OFFERS A PACT: WHAT DO YOU DO?
-          </h3>
-          <p className="text-[#9ca3af] text-xs mt-1">
-            This is the moment that defines your sequel. Choose wisely.
-          </p>
-        </div>
-      </div>
-
-      {!continuation ? (
-        <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {CHOICES.map((choice) => (
-            <button
-              key={choice.id}
-              id={`choice-${choice.id}`}
-              onClick={() => handleChoice(choice.id)}
-              disabled={loading}
-              className={`option-card flex flex-col gap-1.5 ${
-                selected === choice.id && loading ? "selected shimmer" : ""
-              } ${loading && selected !== choice.id ? "opacity-40" : ""}`}
-            >
-              <span className="text-2xl">{choice.emoji}</span>
-              <span className="font-title font-bold text-xs text-[#f0ece8]">{choice.label}</span>
-              <span className="text-[#9ca3af] text-[11px]">{choice.desc}</span>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="p-5">
-          <h4 className="font-title font-bold text-yellow-400 text-xs uppercase tracking-widest mb-2">
-            {continuation.continuationTitle}
-          </h4>
-          <p className="text-[#d1c8b8] leading-relaxed mb-3 text-xs">
-            {continuation.continuation}
-          </p>
-          {continuation.cliffhanger && (
-            <div className="border-l-2 border-purple-500/50 pl-3">
-              <p className="text-purple-300 italic text-xs">{continuation.cliffhanger}</p>
-            </div>
-          )}
-        </motion.div>
-      )}
-    </div>
-  );
-}
-
-// ─── 13. Alternate Endings ───────────────────────────────────
-function AlternateEndings({ shareCode }: { shareCode: string }) {
-  const [activeEnding, setActiveEnding] = useState<string | null>(null);
-  const [loadingEnding, setLoadingEnding] = useState<string | null>(null);
-  const [endings, setEndings] = useState<
-    Record<string, { endingTitle: string; ending: string; finalLine: string }>
-  >({});
-
-  const ENDING_TYPES = [
-    { id: "hero", emoji: "🏆", label: "Hero Ending", desc: "Triumph over everything." },
-    { id: "dark", emoji: "💀", label: "Dark Ending", desc: "Victory has a price." },
-    { id: "funny", emoji: "😂", label: "Funny Ending", desc: "Win in the most ridiculous way." },
-  ];
-
-  const loadEnding = async (type: string) => {
-    if (endings[type]) {
-      setActiveEnding(type);
-      return;
-    }
-    setLoadingEnding(type);
-    try {
-      const res = await fetch("/api/movie", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shareCode, endingType: type }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setEndings((prev) => ({ ...prev, [type]: data.alternateEnding }));
-      }
-    } catch {
-      setEndings((prev) => ({
-        ...prev,
-        [type]: {
-          endingTitle: `The ${type.toUpperCase()} Ending`,
-          ending:
-            "The story concluded in a way that perfectly matched the chaotic energy of everything that came before it.",
-          finalLine: "The end.",
-        },
-      }));
-    }
-    setLoadingEnding(null);
-    setActiveEnding(type);
-  };
-
-  return (
-    <div className="card-glass rounded-2xl border border-white/8 p-6">
-      <h3 className="font-title font-bold text-sm uppercase tracking-widest text-[#9ca3af] mb-4">
-        🎭 ALTERNATE ENDINGS
-      </h3>
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        {ENDING_TYPES.map((e) => (
-          <button
-            key={e.id}
-            id={`ending-${e.id}`}
-            onClick={() => loadEnding(e.id)}
-            disabled={loadingEnding === e.id}
-            className={`option-card text-center flex flex-col items-center gap-1.5 py-3 ${
-              activeEnding === e.id ? "selected" : ""
-            } ${loadingEnding === e.id ? "shimmer" : ""}`}
-          >
-            <span className="text-xl">{e.emoji}</span>
-            <span className="text-[11px] font-title font-bold text-[#f0ece8] leading-tight">
-              {e.label}
-            </span>
-          </button>
-        ))}
-      </div>
-
-      <AnimatePresence mode="wait">
-        {activeEnding && endings[activeEnding] && (
-          <motion.div
-            key={activeEnding}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="border-t border-white/8 pt-3 text-xs"
-          >
-            <h4 className="font-title font-bold text-yellow-400 text-xs uppercase tracking-widest mb-2">
-              {endings[activeEnding].endingTitle}
-            </h4>
-            <p className="text-[#d1c8b8] leading-relaxed mb-2">
-              {endings[activeEnding].ending}
-            </p>
-            <p className="text-yellow-400/80 italic">"{endings[activeEnding].finalLine}"</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-// ─── 14. Movie Awards ────────────────────────────────────────
-function MovieAwards({ profile }: { profile: MovieProfile }) {
-  const awards = profile.awards || [
-    { icon: "🥇", title: "Best Accidental Hero", subtitle: "Defeated destiny on pure improvisation" },
-    { icon: "🏆", title: "Most Unnecessary Plot Twist", subtitle: "Even the narrator was visibly surprised" },
-    { icon: "🏆", title: "Best Use of a Questionable Weapon", subtitle: "Executed with 100% confidence" },
-    { icon: "🏆", title: "Most Likely to Survive by Accident", subtitle: "100% survival rate" },
-  ];
-
-  return (
-    <div className="card-glass rounded-2xl border border-yellow-400/20 p-6">
-      <h3 className="font-title font-bold text-sm uppercase tracking-widest text-yellow-400 mb-4 flex items-center gap-2">
-        <Award size={16} />
-        YOUR MOVIE AWARDS
-      </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {awards.map((aw) => (
-          <div
-            key={aw.title}
-            className="flex items-center gap-3 bg-black/30 p-3 rounded-xl border border-white/5"
-          >
-            <span className="text-2xl">{aw.icon}</span>
-            <div>
-              <div className="text-[#f0ece8] font-title font-bold text-xs">{aw.title}</div>
-              <div className="text-[#9ca3af] text-[11px]">{aw.subtitle}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── 15. Share Suite ─────────────────────────────────────────
+// ─── 16. Share Suite ─────────────────────────────────────────
 function ShareSuite({
   shareCode,
   movieTitle,
@@ -949,7 +859,6 @@ export default function MoviePage() {
 
   useEffect(() => {
     async function loadMovie() {
-      // Try session storage first
       const raw = sessionStorage.getItem("plottwist-result");
       if (raw) {
         try {
@@ -965,7 +874,6 @@ export default function MoviePage() {
         }
       }
 
-      // Fetch from API
       try {
         const res = await fetch(`/api/movie?code=${shareCode}`);
         const data = await res.json();
@@ -1043,10 +951,13 @@ export default function MoviePage() {
       {/* 2. Main Movie Poster Card */}
       <MoviePoster data={movieData} />
 
-      {/* 3. Box Office & Ratings Card */}
-      <BoxOfficeCard profile={movieData.profile} />
+      {/* 3. Absurd Production Budget Card */}
+      <ProductionBudgetCard profile={movieData.profile} />
 
-      {/* 4. Cinematic Scenes & Story Showcase */}
+      {/* 4. Confused Critics Reviews Card */}
+      <CriticsReviewsCard profile={movieData.profile} />
+
+      {/* 5. Cinematic Scenes & Story Showcase with Narrator Commentary */}
       <div className="card-glass rounded-3xl p-6 sm:p-8 border border-white/8 space-y-6">
         <div className="border-b border-white/10 pb-4">
           <h3 className="font-title font-bold text-lg text-yellow-400 uppercase tracking-wide">
@@ -1064,12 +975,32 @@ export default function MoviePage() {
           </p>
         </div>
 
+        {/* Live Audience Reaction #1 */}
+        {movieData.profile.audienceReactions?.[0] && (
+          <div className="bg-purple-950/20 border border-purple-500/20 rounded-xl p-3 text-xs text-purple-300 italic flex items-center gap-2">
+            <span>👤</span>
+            <strong>{movieData.profile.audienceReactions[0].user}:</strong> "{movieData.profile.audienceReactions[0].quote}"
+          </div>
+        )}
+
         {/* Scene 2 */}
         <div className="space-y-2 pt-2 border-t border-white/5">
           <p className="text-[#d1c8b8] text-sm leading-relaxed whitespace-pre-line">
             {movieData.story.currentChapter}
           </p>
         </div>
+
+        {/* Narrator Interruption Box */}
+        {movieData.profile.narratorInterruption && (
+          <div className="bg-red-950/30 border border-red-500/40 rounded-2xl p-4 text-xs text-red-200 space-y-1 my-4">
+            <div className="font-title font-black text-red-400 uppercase tracking-wider flex items-center gap-1.5">
+              🛑 NARRATOR INTERRUPTION
+            </div>
+            <p className="leading-relaxed italic">
+              {movieData.profile.narratorInterruption}
+            </p>
+          </div>
+        )}
 
         {/* Quest & Encounter */}
         <div className="space-y-2 pt-2 border-t border-white/5">
@@ -1084,6 +1015,9 @@ export default function MoviePage() {
           </p>
         </div>
 
+        {/* Fake Ad in between story */}
+        <FakeAdCard profile={movieData.profile} />
+
         {/* Scene 3: The Plot Twist */}
         <div className="twist-card p-5 rounded-2xl text-center my-4">
           <div className="text-2xl mb-1">🌀</div>
@@ -1094,6 +1028,14 @@ export default function MoviePage() {
             {movieData.story.plotTwist}
           </p>
         </div>
+
+        {/* Live Audience Reaction #2 */}
+        {movieData.profile.audienceReactions?.[1] && (
+          <div className="bg-purple-950/20 border border-purple-500/20 rounded-xl p-3 text-xs text-purple-300 italic flex items-center gap-2">
+            <span>👤</span>
+            <strong>{movieData.profile.audienceReactions[1].user}:</strong> "{movieData.profile.audienceReactions[1].quote}"
+          </div>
+        )}
 
         {/* Scene 4: Climax & Ending */}
         <div className="space-y-3 pt-2 border-t border-white/5">
@@ -1106,48 +1048,44 @@ export default function MoviePage() {
         </div>
       </div>
 
-      {/* 5. Completely Unreliable Stats */}
+      {/* 6. The Ultimate Comedy Score Card */}
+      <UltimateComedyScoreCard profile={movieData.profile} />
+
+      {/* 7. Completely Unreliable Stats */}
       <UnreliableStats profile={movieData.profile} />
 
-      {/* 6. Life Mechanics */}
-      <LifeMechanicsCard profile={movieData.profile} />
-
-      {/* 7. Character Inventory & Secret Item */}
+      {/* 8. Character Inventory & Secret Item */}
       <InventoryCard profile={movieData.profile} />
 
-      {/* 8. Totally Scientific Future (Prophecies) */}
-      <ScientificFutureCard profile={movieData.profile} />
+      {/* 9. Movie Survival Board */}
+      <MovieSurvivalBoard profile={movieData.profile} />
 
-      {/* 9. Roast Me Generator */}
+      {/* 10. The AI Judges Your Answers */}
+      <AIJudgementCard profile={movieData.profile} />
+
+      {/* 11. Breaking News & Kingdom Alert */}
+      <FakeNewsCard profile={movieData.profile} />
+
+      {/* 12. Official Movie Merchandise Shop */}
+      <MerchandiseCard profile={movieData.profile} />
+
+      {/* 13. Roast Me Generator */}
       <RoastCard profile={movieData.profile} />
 
-      {/* 10. Achievements */}
-      <AchievementsCard profile={movieData.profile} />
-
-      {/* 11. Random Event Clicker */}
+      {/* 14. Random Event Clicker */}
       <RandomEventCard profile={movieData.profile} />
 
-      {/* 12. Interactive Post-Credit Scene */}
+      {/* 15. Interactive Post-Credit Scene */}
       <PostCreditScene postCredit={movieData.story.postCreditScene} />
 
-      {/* 13. Interactive Climax Decision */}
-      <InteractiveDecision
-        shareCode={movieData.shareCode}
-        profile={movieData.profile}
-        story={movieData.story}
-      />
-
-      {/* 14. Alternate Endings */}
-      <AlternateEndings shareCode={movieData.shareCode} />
-
-      {/* 15. Viral Friend Hook: "Someone is suspicious" */}
+      {/* 16. Viral Friend Hook */}
       <div className="card-glass rounded-2xl border border-purple-500/30 p-6 text-center bg-gradient-to-r from-purple-950/20 to-indigo-950/20">
         <div className="text-4xl mb-2">👀</div>
         <h3 className="font-title font-bold text-base sm:text-lg text-purple-300 uppercase tracking-wide mb-2">
           WE FOUND SOMETHING SUSPICIOUS...
         </h3>
         <p className="text-[#d1c8b8] text-xs sm:text-sm max-w-md mx-auto mb-4 leading-relaxed">
-          Someone in your friend group has an <strong>87% probability of betraying everyone</strong>.
+          Someone in your friend group has an <strong>82% probability of betraying everyone</strong>.
           Add your friends to generate a group movie and find out who it is!
         </p>
         <Link
@@ -1158,9 +1096,6 @@ export default function MoviePage() {
           MAKE A MOVIE WITH FRIENDS
         </Link>
       </div>
-
-      {/* 16. Movie Awards */}
-      <MovieAwards profile={movieData.profile} />
 
       {/* 17. Share Suite */}
       <ShareSuite

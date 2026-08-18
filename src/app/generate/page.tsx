@@ -5,15 +5,13 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 const GENERATION_STEPS = [
-  { icon: "🎭", message: "Casting your character…" },
-  { icon: "🌍", message: "Building your world…" },
-  { icon: "😈", message: "Summoning your villain…" },
-  { icon: "🐉", message: "Negotiating with your companion…" },
-  { icon: "⚡", message: "Activating your forbidden power…" },
-  { icon: "🎲", message: "Rolling the cinematic dice…" },
-  { icon: "📖", message: "Writing your plot twist…" },
-  { icon: "🔥", message: "Setting the final battle scene…" },
-  { icon: "🎬", message: "Your movie is almost ready…" },
+  { icon: "⏳", title: "PROCESSING YOUR LIFE...", message: "Reading your 12 answers with increasing bewilderment…" },
+  { icon: "🧠", title: "ANALYZING DECISIONS...", message: "Searching for evidence of long-term planning…" },
+  { icon: "🧐", title: "ANALYZING QUESTIONABLE DECISIONS...", message: "Found 847 questionable decisions. Proceeding anyway…" },
+  { icon: "💀", title: "RECHECKING QUESTIONABLE DECISIONS...", message: "The writers have ordered pizza. This is going to be cinematic." },
+  { icon: "📜", title: "CONSULTING ANCIENT SCROLLS...", message: "The AI is consulting ancient prophecies. (The wizard is on lunch break)." },
+  { icon: "⚠️", title: "WE HAVE FOUND SEVERAL CONCERNS...", message: "Preparing the Chair of Destiny and emergency budget of ₹12…" },
+  { icon: "🎬", title: "YOUR MOVIE IS READY!", message: "Directing the climax and rendering the Oscars speech…" },
 ];
 
 export default function GeneratePage() {
@@ -30,7 +28,7 @@ export default function GeneratePage() {
       // Step through visual messages
       const stepInterval = setInterval(() => {
         setCurrentStep((s) => Math.min(s + 1, GENERATION_STEPS.length - 1));
-      }, 900);
+      }, 950);
 
       try {
         const raw = sessionStorage.getItem("plottwist-answers");
@@ -98,81 +96,61 @@ export default function GeneratePage() {
   const step = GENERATION_STEPS[currentStep];
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4">
-      {/* Cinematic rings */}
-      <div className="relative mb-12">
-        {[0, 1, 2].map((i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full border border-yellow-400/20"
-            style={{
-              width: 120 + i * 60,
-              height: 120 + i * 60,
-              top: -(i * 30),
-              left: -(i * 30),
-            }}
-            animate={{ rotate: i % 2 === 0 ? 360 : -360 }}
-            transition={{
-              duration: 8 + i * 4,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
-        ))}
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden bg-[#07030e]">
+      {/* Background glow elements */}
+      <div className="absolute w-96 h-96 bg-purple-600/10 rounded-full blur-3xl -top-20 -left-20 pointer-events-none" />
+      <div className="absolute w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl -bottom-20 -right-20 pointer-events-none" />
 
-        {/* Center icon */}
+      <div className="max-w-md w-full text-center relative z-10">
+        {/* Animated icon */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 1.5, opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="w-24 h-24 rounded-full card-glass border border-yellow-400/30 flex items-center justify-center text-4xl"
+            initial={{ scale: 0.7, opacity: 0, y: 10 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 1.2, opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="text-7xl mb-6 inline-block"
           >
             {step.icon}
           </motion.div>
         </AnimatePresence>
-      </div>
 
-      {/* Message */}
-      <AnimatePresence mode="wait">
-        <motion.p
-          key={currentStep}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.35 }}
-          className="font-title text-xl sm:text-2xl text-[#f0ece8] text-center mb-8"
-        >
-          {step.message}
-        </motion.p>
-      </AnimatePresence>
-
-      {/* Progress dots */}
-      <div className="flex gap-2">
-        {GENERATION_STEPS.map((_, i) => (
+        {/* Step Title & Message */}
+        <AnimatePresence mode="wait">
           <motion.div
-            key={i}
-            className="rounded-full"
-            animate={{
-              width: i === currentStep ? 24 : 8,
-              backgroundColor:
-                i < currentStep
-                  ? "#f5c842"
-                  : i === currentStep
-                  ? "#f5c842"
-                  : "rgba(255,255,255,0.1)",
-            }}
-            style={{ height: 8 }}
+            key={`text-${currentStep}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.3 }}
-          />
-        ))}
-      </div>
+            className="mb-8"
+          >
+            <h2 className="font-dramatic text-xl sm:text-2xl font-black text-yellow-400 mb-2 glow-text-gold">
+              {step.title}
+            </h2>
+            <p className="text-[#9ca3af] text-sm leading-relaxed max-w-sm mx-auto">
+              {step.message}
+            </p>
+          </motion.div>
+        </AnimatePresence>
 
-      <p className="text-[#6b7280] text-sm mt-8">
-        Your cinematic story is being crafted…
-      </p>
+        {/* Progress Bar */}
+        <div className="w-full bg-white/10 rounded-full h-2.5 overflow-hidden mb-4 border border-white/5">
+          <motion.div
+            className="h-full bg-gradient-to-r from-yellow-500 via-amber-400 to-purple-500 rounded-full"
+            initial={{ width: "10%" }}
+            animate={{
+              width: `${Math.round(((currentStep + 1) / GENERATION_STEPS.length) * 100)}%`,
+            }}
+            transition={{ duration: 0.4 }}
+          />
+        </div>
+
+        <p className="text-[#6b7280] text-xs">
+          Step {currentStep + 1} of {GENERATION_STEPS.length} • 100% Unqualified AI
+        </p>
+      </div>
     </div>
   );
 }

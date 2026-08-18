@@ -14,21 +14,24 @@ export const QuizAnswersSchema = z.object({
   name: z
     .string()
     .optional()
-    .transform((v) => (v && v.trim().length > 0 ? v.trim().slice(0, 30) : "The Hero")),
+    .transform((v) => (v && v.trim().length > 0 ? v.trim().slice(0, 30) : "The Protagonist")),
   universe: z.string().optional().transform((v) => (v && v.trim() ? v : "fantasy")),
   role: z.string().optional().transform((v) => (v && v.trim() ? v : "reluctant_hero")),
-  situation: defaultAnswer("just_starting"),
-  quest: defaultAnswer("wealth"),
-  strength: defaultAnswer("intelligence"),
+  situation: defaultAnswer("everything_at_once"),
+  severity: defaultAnswer("ridiculous"),
+  problem_solving: defaultAnswer("make_worse"),
   weakness: defaultAnswer("procrastination"),
-  problem_solving: defaultAnswer("plan"),
-  weapon: defaultAnswer("sword"),
-  companion: defaultAnswer("dragon"),
+  emergency_strategy: defaultAnswer("nap"),
+  weapon: defaultAnswer("chair"),
+  companion: defaultAnswer("talking_cat"),
+  sacrifice: defaultAnswer("screen_time"),
+  ending: defaultAnswer("sequel"),
+  // Fallbacks for any legacy/derived references
+  quest: defaultAnswer("survive"),
+  strength: defaultAnswer("luck"),
   power: defaultAnswer("time"),
-  fear: defaultAnswer("failure"),
-  trust: defaultAnswer("best_friend"),
-  sacrifice: defaultAnswer("power"),
-  ending: defaultAnswer("heroic"),
+  fear: defaultAnswer("monday"),
+  trust: defaultAnswer("nobody"),
 });
 
 export type QuizAnswers = z.infer<typeof QuizAnswersSchema>;

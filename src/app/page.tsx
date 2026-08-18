@@ -179,25 +179,24 @@ export default function HomePage() {
           className="relative z-10 max-w-4xl"
         >
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-400/30 bg-yellow-400/5 mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-400/30 bg-yellow-400/5 mb-6">
             <Film size={14} className="text-yellow-400" />
             <span className="text-yellow-400 text-xs font-semibold uppercase tracking-widest">
-              Cinematic Entertainment — For Fun Only
+              We asked you 12 questions. We regret asking 11 of them.
             </span>
           </div>
 
           {/* Main headline */}
-          <h1 className="font-title text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[0.95] mb-6 text-gold-gradient glow-text-gold">
-            YOUR LIFE.
+          <h1 className="font-title text-4xl sm:text-6xl md:text-7xl font-black leading-[1.05] mb-6 text-gold-gradient glow-text-gold">
+            YOUR LIFE:
             <br />
-            <span className="text-[#f0ece8]">BUT MAKE IT</span>
+            <span className="text-[#f0ece8]">THE ABSOLUTELY</span>
             <br />
-            A MOVIE.
+            UNNECESSARY MOVIE.
           </h1>
 
-          <p className="text-[#9ca3af] text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            Answer a few ridiculous questions and turn your life into an epic,
-            funny, completely fictional cinematic adventure.
+          <p className="text-[#d1c8b8] text-base sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed italic">
+            “Answer honestly. Our completely unqualified AI will turn your life into a movie.”
           </p>
 
           {/* CTAs */}
